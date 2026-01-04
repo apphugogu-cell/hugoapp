@@ -3,24 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hola</title>
+    <title>Mi Dashboard de Herramientas</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f0f0f0;
-        }
-        h1 {
-            font-size: 5rem;
-            color: #333;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: #333; }
+        .header { text-align: center; padding: 20px; color: white; }
+        .dashboard { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; padding: 20px; max-width: 1200px; margin: 0 auto; }
+        .tool-btn { background: rgba(255,255,255,0.2); backdrop-filter: blur(10px); border: 2px solid rgba(255,255,255,0.3); border-radius: 15px; padding: 20px; width: 200px; text-align: center; cursor: pointer; transition: all 0.3s; color: white; text-decoration: none; font-size: 16px; font-weight: bold; }
+        .tool-btn:hover { transform: scale(1.05); background: rgba(255,255,255,0.3); }
+        .section { display: none; padding: 20px; max-width: 1000px; margin: 20px auto; background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .section.active { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .back-btn { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-bottom: 20px; }
+        .back-btn:hover { background: #0056b3; }
+        .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin-top: 20px; }
+        .gallery img { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; cursor: pointer; transition: transform 0.3s; }
+        .gallery img:hover { transform: scale(1.05); }
+        #crop-image { max-width: 100%; max-height: 400px; }
+        .crop-controls button { background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 0 5px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background: #f8f9fa; }
+        input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .add-row { background: #17a2b8; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+        .qr-code { text-align: center; margin-top: 20px; }
+        #qrcode { margin: 20px auto; }
+        @media (max-width: 768px) { .dashboard { flex-direction: column; align-items: center; } .tool-btn { width: 90%; } }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
 <body>
-    <h1>Hola</h1>
+    <div class="header">
+        <h1>🚀 Mi Dashboard de Herramientas</h1>
+        <p>Usa las herramientas gratis directamente aquí. ¡Sube archivos y descarga resultados!</p>
+    </div>
+
+    <div class="dashboard" id="dashboard">
+        <div class="tool-btn" onclick="showSection('fotografico')">📸 Panel Fotográfico<br>Galería y visor</div>
+        <div class="tool-btn" onclick="showSection('recortes')">✂️ Recortar Imágenes<br>Edita y descarga</div>
+        <div class="tool-btn" onclick="showSection('inventarios')">📊 Inventarios<br>Tabla editable</div>
+        <div class="tool-btn" onclick="showSection('qr')">📱 Generador QR<br>Para enlaces/textos</div>
+        <div class="tool-btn" onclick="showSection('texto')">✏️ Editor de Texto<br>Notas rápidas</div>
+    </div>
+
+    <div id="fotografico" class="section">
+        <button class="back-btn" onclick="showDashboard()">← Volver</button>
+        <h2>📸 Panel Fotográfico</h2>
+        <p>Sube varias fotos para verlas en galería. Click para agrandar.</p>
+        <input type="file" id="photoInput" multiple accept="image/*">
+        <div id="gallery" class="gallery"></div>
+    </div>
+
+    <div id="recortes" class="section">
+        <button class="back-btn" onclick="showDashboard()">← Volver</button>
+        <h2>✂️ Recortar Imágenes</h2>
+        <p>Sube una imagen, arrastra el cuadro para recortar, y descarga.</p>
+        <input type="file" id="cropInput" accept="image/*">
+        <img id="crop-image">
+        <div class="crop-controls">
+            <button onclick="cropper.reset()">Reiniciar</button>
+            <button onclick="downloadCropped()">📥 Descargar Recortada</button>
+        </div>
+    </div>
+
+    <div id="inventarios" class="section">
+        <button class="back-btn" onclick="showDashboard()">← Volver</button>
+        <h2>📊 Gestión de Inventarios</h2>
+        <p>Edita la tabla en vivo.</p>
+        <button class="add-row" onclick="addRow()">+ Agregar Producto</button>
+        <table id="inventoryTable">
+            <thead><tr><th>Producto</th><th>Cantidad</th><th>Precio</th><th>Total</th><th>Acciones</th></tr></thead>
+            <tbody>
+                <tr><td><input value="Camisa"></td><td><input value="10" oninput="updateTotal(this)"></td><td><input value="15" oninput="updateTotal(this)"></td><td>150</td><td><button onclick="deleteRow(this)">🗑️</button></td></tr>
+            </tbody>
+        </table>
+        <h3>Total Inventario: $<span id="grandTotal">150</span></h3>
+    </div>
+
+    <div id="qr" class="section">
+        <button class="back-btn" onclick="showDashboard()">← Volver</button>
+        <h2>📱 Generador de QR</h2>
+        <p>Escribe un enlace o texto y genera QR.</p>
+        <input type="text" id="qrText" placeholder="https://ejemplo.com o texto" style="width:100%; padding:10px;">
+        <button onclick="generateQR()" style="background:#28a745; color:white; border:none; padding:10px 20px; margin-top:10px; border-radius:5px; cursor:pointer;">Generar QR</button>
+        <div id="qrcode" class="qr-code"></div>
+    </div>
+
+    <div id="texto" class="section">
+        <button class="back-btn" onclick="showDashboard()">← Volver</button>
+        <h2>✏️ Editor de Texto Simple</h2>
+        <p>Escribe notas y descarga como TXT.</p>
+        <textarea id="textEditor" rows="15" style="width:100%; padding:15px; font-size:16px; border:1px solid #ddd; border-radius:8px;"></textarea>
+        <br>
+        <button onclick="downloadText()" style="background:#ffc107; color:#333; border:none; padding:10px 20px; margin-top:10px; border-radius:5px; cursor:pointer;">📥 Descargar TXT</button>
+    </div>
+
+    <script>
+        let cropper;
+        function showSection(id) { document.querySelectorAll('.section').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+        function showDashboard() { document.querySelectorAll('.section').forEach(s => s.classList.remove('active')); }
+
+        document.getElementById('photoInput').addEventListener('change', (e) => {
+            const gallery = document.getElementById('gallery'); gallery.innerHTML = '';
+            Array.from(e.target.files).forEach(file => {
+                const url = URL.createObjectURL(file);
+                const img = document.createElement('img'); img.src = url;
+                img.onclick = () => window.open(url, '_blank');
+                gallery.appendChild(img);
+            });
+        });
+
+        document.getElementById('cropInput').addEventListener('change', (e) => {
+            const image = document.getElementById('crop-image'); const file = e.target.files[0];
+            const url = URL.createObjectURL(file); image.src = url;
+            if (cropper) cropper.destroy();
+            cropper = new Cropper(image, { aspectRatio: NaN, viewMode: 1 });
+        });
+        function downloadCropped() {
+            cropper.getCroppedCanvas().toBlob((blob) => {
+                const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'recortada.jpg'; a.click();
+            });
+        }
+
+        function updateTotal(input) {
+            const row = input.closest('tr');
+            const qty = parseFloat(row.cells[1].querySelector('input').value) || 0;
+            const price = parseFloat(row.cells[2].querySelector('input').value) || 0;
+            row.cells[3].textContent = (qty * price).toFixed(2);
+            updateGrandTotal();
+        }
+        function updateGrandTotal() {
+            let total = 0;
+            document.querySelectorAll('#inventoryTable tbody tr').forEach(row => {
+                total += parseFloat(row.cells[3].textContent) || 0;
+            });
+            document.getElementById('grandTotal').textContent = total.toFixed(2);
+        }
+        function addRow() {
+            const tbody = document.querySelector('#inventoryTable tbody');
+            const row = tbody.insertRow();
+            row.innerHTML = `<td><input value="Nuevo"></td><td><input value="0" oninput="updateTotal(this)"></td><td><input value="0" oninput="updateTotal(this)"></td><td>0</td><td><button onclick="deleteRow(this)">🗑️</button></td>`;
+            updateGrandTotal();
+        }
+        function deleteRow(btn) { btn.closest('tr').remove(); updateGrandTotal(); }
+
+        function generateQR() {
+            document.getElementById('qrcode').innerHTML = '';
+            const text = document.getElementById('qrText').value;
+            if (text) new QRCode(document.getElementById('qrcode'), { text: text, width: 256, height: 256 });
+        }
+
+        function downloadText() {
+            const text = document.getElementById('textEditor').value;
+            const blob = new Blob([text], { type: 'text/plain' });
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'nota.txt'; a.click();
+        }
+    </script>
 </body>
 </html>

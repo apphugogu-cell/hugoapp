@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Mi Ubicación en Tiempo Real</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        #info {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: rgba(255,255,255,0.9);
+            padding: 12px 18px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            font-size: 1.1em;
+        }
+        .error {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div id="map"></div>
+<div id="info">Buscando tu ubicación...</div>
+
+<script>
+// Inicializamos el mapa
+const map = L.map('map', {
+    zoomControl: true,
+    attributionControl: true
+}).setView([-12.0464, -77.0428], 13); // Centro inicial (Lima por defecto)
+
+// Capa de OpenStreetMap
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+}).addTo(map);
+
+// Marcador y círculo que vamos a actualizar
+let marker = null;
+let circle = null;
+
+function updateLocation(position) {
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+    const acc = position.coords.accuracy;
+
+    document.getElementById('info').innerHTML = 
+        `Lat: ${lat.toFixed(6)}<br>Lng: ${lon.toFixed(6)}<br>Precisión: ±${acc.toFixed(0)} metros`;
+
+    // Centramos el mapa en la posición actual (solo la primera vez o si está muy lejos)
+    if (!marker) {
+        map.setView([lat, lon], 17);
+    }
+
+    // Actualizamos o creamos el marcador
+    if (marker) {
+        marker.setLatLng([lat, lon]);
+        circle.setLatLng([lat, lon]);
+        circle.setRadius(acc);
+    } else {
+        marker = L.marker([lat, lon], {
+            title: "¡Estás aquí!"
+        }).addTo(map);
+        
+        circle = L.circle([lat, lon], {
+            color: '#3388ff',
+            fillColor: '#3388ff',
+            fillOpacity: 0.15,
+            radius: acc
+        }).addTo(map);
+    }
+}
+
+function errorLocation(err) {
+    let mensaje = "No pudimos obtener tu ubicación";
+    
+    switch(err.code) {
+        case err.PERMISSION_DENIED:
+            mensaje = "Permiso de ubicación denegado 😕<br>Por favor permite el acceso a la ubicación";
+            break;
+        case err.POSITION_UNAVAILABLE:
+            mensaje = "Información de ubicación no disponible";
+            break;
+        case err.TIMEOUT:
+            mensaje = "La solicitud tardó demasiado";
+            break;
+        default:
+            mensaje = "Error desconocido: " + err.message;
+    }
+    
+    document.getElementById('info').innerHTML = `<span class="error">${mensaje}</span>`;
+}
+
+// Opciones para geolocalización
+const options = {
+    enableHighAccuracy: true,
+    timeout: 10000,
+    maximumAge: 0
+};
+
+// Iniciamos seguimiento en tiempo real
+if ("geolocation" in navigator) {
+    navigator.geolocation.watchPosition(
+        updateLocation,
+        errorLocation,
+        options
+    );
+} else {
+    document.getElementById('info').innerHTML = 
+        '<span class="error">Tu navegador no soporta geolocalización</span>';
+}
+
+</script>
+</body>
+</html>

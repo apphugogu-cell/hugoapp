@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <title>Mapa Conexiones Agua Potable - La Libertad</title>
+    <title>Mapa Conexiones Agua Potable - La Libertad (Mejorado)</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
     
     <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    
+
     <style>
         body { margin:0; padding:0; font-family: 'Segoe UI', Arial, sans-serif; background:#f8f9ff; }
         #map { height: 100vh; width: 100%; }
@@ -88,17 +88,23 @@
         
         button[onclick="imprimirMapaNormal()"] {
             background: #16a34a !important;
+            font-size: 16px;
         }
         
         button[onclick="imprimirMapaNormal()"]:hover {
             background: #15803d !important;
         }
-        
+
+
         #export-buttons button {
             background: #64748b;
             height: 50px;
         }
         
+        #export-buttons button:hover {
+            background: #475569;
+        }
+
         select, input[type="text"], input[type="file"] {
             width: 100%;
             padding: 14px 16px;
@@ -115,6 +121,7 @@
             box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
         }
         
+
         #leyenda {
             position: absolute;
             bottom: 20px;
@@ -131,33 +138,37 @@
         .leyenda-item { display: flex; align-items: center; margin: 6px 0; }
         .leyenda-color { width: 16px; height: 16px; border-radius: 50%; margin-right: 10px; border: 1px solid #666; }
         
-        .modal {
-            display: none; position: fixed; z-index: 2000; left: 0; top: 0;
-            width: 100%; height: 100%; background: rgba(0,0,0,0.6);
-            justify-content: center; align-items: center;
-        }
-        
-        .modal-content {
+        .legend-toggle {
+            position: absolute;
+            bottom: 100px;
+            right: 30px;
+            z-index: 1001;
             background: white;
-            color: #1f2937;
-            padding: 24px;
-            border-radius: 12px;
-            width: 380px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+            border: 2px solid #4682b4;
+            border-radius: 50%;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+            font-size: 18px;
+            color: #4682b4;
+            transition: all 0.25s;
         }
         
-        .close { float: right; font-size: 28px; cursor: pointer; color: #666; }
-
-        /* Estilo para botón de ubicación activo */
-        .location-control-active {
-            background-color: #a5d8ff !important;
+        .legend-toggle:hover {
+            background: #4682b4;
+            color: white;
+            transform: scale(1.08);
+            box-shadow: 0 5px 15px rgba(70,130,180,0.4);
         }
         
-        .location-control-active i {
-            animation: pulse 2s infinite;
-        }
+        #leyenda.hidden { display: none !important; }
+        
+        .location-control-active { background-color: #a5d8ff !important; }
+        .location-control-active i { animation: pulse 2s infinite; }
         
         @keyframes pulse {
             0% { transform: scale(1); }
@@ -165,19 +176,18 @@
             100% { transform: scale(1); }
         }
 
+        .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; }
+        .modal-content { background: white; color: #1f2937; padding: 24px; border-radius: 12px; width: 380px; max-height: 90vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
+        .close { float: right; font-size: 28px; cursor: pointer; color: #666; }
+
         @media print {
-            #leyenda, .leaflet-control-container, .leaflet-sidebar { display: none !important; }
+            #leyenda, .leaflet-control-container, .leaflet-sidebar, .legend-toggle { display: none !important; }
             #map { height: 100vh !important; }
-            body::before {
-                content: "Mapa de Conexiones de Agua Potable - Región La Libertad";
-                display: block; text-align: center; font-size: 26px; font-weight: bold;
-                color: #1d4ed8; margin: 30px 0 20px;
-            }
+            body::before { content: "Mapa de Conexiones de Agua Potable - Región La Libertad"; display: block; text-align: center; font-size: 26px; font-weight: bold; color: #1d4ed8; margin: 30px 0 20px; }
         }
     </style>
 </head>
 <body data-print-date="">
-
     <div id="map"></div>
 
     <!-- Sidebar -->
@@ -232,14 +242,18 @@
         </div>
     </div>
 
-    <!-- Leyenda -->
-    <div id="leyenda">
+    <!-- Leyenda (inicia oculta) + botón toggle flotante -->
+    <div id="leyenda" class="hidden">
         <strong>Leyenda</strong><br>
         <div class="leyenda-item"><div class="leyenda-color" style="background:#d32f2f;"></div>A1</div>
         <div class="leyenda-item"><div class="leyenda-color" style="background:#ffeb3b;"></div>A2</div>
         <div class="leyenda-item"><div class="leyenda-color" style="background:#4caf50;"></div>A3</div>
         <div class="leyenda-item"><div class="leyenda-color" style="background:#212121;"></div>Imposibilidad</div>
         <div class="leyenda-item"><div class="leyenda-color" style="background:#4682b4;"></div>Proyecto Total</div>
+    </div>
+
+    <div class="legend-toggle" id="toggleLeyenda" title="Mostrar/Ocultar leyenda">
+        <i class="fa fa-eye"></i>
     </div>
 
     <!-- Modales -->
@@ -296,7 +310,6 @@
             </button>
         </div>
     </div>
-
     <!-- Scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
@@ -324,6 +337,7 @@
         var locationMarker = null;
         var locationAccuracyCircle = null;
         var isLocationActive = false;
+        var firstLocationReceived = false;
 
         var visibilidad = {
             A1: true,
@@ -340,7 +354,29 @@
             autopan: false
         }).addTo(map);
 
-        // Control flotante de ubicación
+        function getColor(tipo) {
+            switch(tipo) {
+                case 'A1': return '#d32f2f';
+                case 'A2': return '#ffeb3b';
+                case 'A3': return '#4caf50';
+                case 'IMPOSIBILIDAD': return '#212121';
+                case 'PROYECTO': return '#4682b4';
+                default: return '#888888';
+            }
+        }
+
+        function crearMarcador(lat, lng, color) {
+            return L.circleMarker([lat, lng], {
+                radius: 6,
+                fillColor: color,
+                color: '#000',
+                weight: 1,
+                opacity: 1,
+                fillOpacity: 0.85
+            });
+        }
+
+        // Control flotante de ubicación (mejora)
         L.Control.UbicacionButton = L.Control.extend({
             options: { position: 'topright' },
 
@@ -382,28 +418,24 @@
         const ubicacionControl = new L.Control.UbicacionButton();
         ubicacionControl.addTo(map);
 
-        function getColor(tipo) {
-            switch(tipo) {
-                case 'A1': return '#d32f2f';
-                case 'A2': return '#ffeb3b';
-                case 'A3': return '#4caf50';
-                case 'IMPOSIBILIDAD': return '#212121';
-                case 'PROYECTO': return '#4682b4';
-                default: return '#888888';
+        // Toggle leyenda
+        document.getElementById('toggleLeyenda').addEventListener('click', function() {
+            const leyenda = document.getElementById('leyenda');
+            const icon = this.querySelector('i');
+            
+            if (leyenda.classList.contains('hidden')) {
+                leyenda.classList.remove('hidden');
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+                this.title = "Ocultar leyenda";
+            } else {
+                leyenda.classList.add('hidden');
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+                this.title = "Mostrar leyenda";
             }
-        }
-
-        function crearMarcador(lat, lng, color) {
-            return L.circleMarker([lat, lng], {
-                radius: 6,
-                fillColor: color,
-                color: '#000',
-                weight: 1,
-                opacity: 1,
-                fillOpacity: 0.85
-            });
-        }
-
+        });
+        // Carga de Excel
         document.getElementById('excelFile').addEventListener('change', function(e) {
             const files = e.target.files;
             if (files.length === 0) return;
@@ -494,21 +526,167 @@
                 selectDist.appendChild(opt);
             });
         }
+         
+        function getAllVisibleMarkers() {
+            let markers = [];
+            loadedFiles.forEach(file => {
+                if (file.visible) markers = markers.concat(file.markers);
+            });
+            return markers;
+        }
 
-        function aplicarFiltros() {
+        function actualizarConteos() {
+            const markers = getAllVisibleMarkers();
+            const c = { A1:0, A2:0, A3:0, IMPOSIBILIDAD:0, PROYECTO:0, total: markers.length };
+            markers.forEach(m => {
+                if (c.hasOwnProperty(m.properties.tipoFiltro)) c[m.properties.tipoFiltro]++;
+            });
+            document.getElementById('modalCountA1').textContent = c.A1;
+            document.getElementById('modalCountA2').textContent = c.A2;
+            document.getElementById('modalCountA3').textContent = c.A3;
+            document.getElementById('modalCountIMP').textContent = c.IMPOSIBILIDAD;
+            document.getElementById('modalCountPROY').textContent = c.PROYECTO;
+            document.getElementById('modalCountTotal').textContent = c.total;
+            document.getElementById('modalSelectionCount').textContent = selectedMarkers.length;
+        }
+
+        function verConteo() {
+            actualizarConteos();
+            document.getElementById('conteoModal').style.display = 'flex';
+        }
+
+        function getAllVisibleData() {
+            let data = [];
+            loadedFiles.forEach(file => {
+                if (file.visible) data = data.concat(file.data);
+            });
+            return data;
+        }
+
+        function verReportePorLocalidad() {
+            const datos = getAllVisibleData();
+            if (datos.length === 0) {
+                document.getElementById('reporteContenido').innerHTML = 'No hay datos visibles.';
+                document.getElementById('btnExportReporte').style.display = 'none';
+                document.getElementById('reporteModal').style.display = 'flex';
+                return;
+            }
+
+            const porDistrito = {};
+            const totales = { A1:0, A2:0, A3:0, IMPOSIBILIDAD:0, PROYECTO:0, total:0 };
+            reporteData = [];
+
+            datos.forEach(row => {
+                const distrito = row.DISTRITO || 'SIN DISTRITO';
+                if (!porDistrito[distrito]) porDistrito[distrito] = { A1:0, A2:0, A3:0, IMPOSIBILIDAD:0, PROYECTO:0, total:0 };
+
+                let tipo = 'PROYECTO';
+                const act = (row.ACTIVIDAD || '').toString().trim().toUpperCase();
+                if (act === 'A1') tipo = 'A1';
+                else if (act === 'A2') tipo = 'A2';
+                else if (act === 'A3') tipo = 'A3';
+                else if (act === 'IMPOSIBILIDAD') tipo = 'IMPOSIBILIDAD';
+
+                porDistrito[distrito][tipo]++;
+                porDistrito[distrito].total++;
+
+                totales[tipo]++;
+                totales.total++;
+            });
+
+            let html = '<table style="width:100%; border-collapse:collapse;"><tr><th>Distrito</th><th>A1</th><th>A2</th><th>A3</th><th>Impos.</th><th>Proy.</th><th>Total</th></tr>';
+            Object.keys(porDistrito).sort().forEach(dist => {
+                const d = porDistrito[dist];
+                html += `<tr><td>${dist}</td><td>${d.A1}</td><td>${d.A2}</td><td>${d.A3}</td><td>${d.IMPOSIBILIDAD}</td><td>${d.PROYECTO}</td><td>${d.total}</td></tr>`;
+                reporteData.push({Distrito: dist, A1: d.A1, A2: d.A2, A3: d.A3, Imposibilidad: d.IMPOSIBILIDAD, Proyecto: d.PROYECTO, Total: d.total});
+            });
+
+            html += `<tr style="font-weight:bold; background:#f0f0f0;"><td><strong>TOTAL GENERAL</strong></td><td><strong>${totales.A1}</strong></td><td><strong>${totales.A2}</strong></td><td><strong>${totales.A3}</strong></td><td><strong>${totales.IMPOSIBILIDAD}</strong></td><td><strong>${totales.PROYECTO}</strong></td><td><strong>${totales.total}</strong></td></tr>`;
+            html += '</table>';
+
+            reporteData.push({Distrito: 'TOTAL GENERAL', A1: totales.A1, A2: totales.A2, A3: totales.A3, Imposibilidad: totales.IMPOSIBILIDAD, Proyecto: totales.PROYECTO, Total: totales.total});
+
+            document.getElementById('reporteContenido').innerHTML = html;
+            document.getElementById('btnExportReporte').style.display = 'block';
+            document.getElementById('reporteModal').style.display = 'flex';
+        }
+
+        function exportarReporteLocalidadExcel() {
+            if (reporteData.length === 0) return alert("No hay datos para exportar.");
+            const ws = XLSX.utils.json_to_sheet(reporteData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Reporte por Localidad");
+            XLSX.writeFile(wb, "reporte_por_localidad.xlsx");
+        }
+
+        function abrirFiltroVisibilidad() {
+            document.getElementById('visA1').checked = visibilidad.A1;
+            document.getElementById('visA2').checked = visibilidad.A2;
+            document.getElementById('visA3').checked = visibilidad.A3;
+            document.getElementById('visIMP').checked = visibilidad.IMPOSIBILIDAD;
+            document.getElementById('visProyecto').checked = visibilidad.PROYECTO;
+            document.getElementById('filtroModal').style.display = 'flex';
+        }
+
+        function aplicarFiltroVisibilidad() {
+            visibilidad.A1 = document.getElementById('visA1').checked;
+            visibilidad.A2 = document.getElementById('visA2').checked;
+            visibilidad.A3 = document.getElementById('visA3').checked;
+            visibilidad.IMPOSIBILIDAD = document.getElementById('visIMP').checked;
+            visibilidad.PROYECTO = document.getElementById('visProyecto').checked;
+            cerrarModal('filtroModal');
+            aplicarFiltros();
+        }
+
+        function abrirArchivosModal() {
+            if (loadedFiles.length === 0) {
+                alert('No hay archivos cargados.');
+                return;
+            }
+            let html = '';
+            loadedFiles.forEach((file, index) => {
+                html += `<label><input type="checkbox" class="file-vis" data-index="${index}" ${file.visible ? 'checked' : ''}> ${file.filename}</label><br>`;
+            });
+            document.getElementById('filesList').innerHTML = html;
+            document.getElementById('filesModal').style.display = 'flex';
+        }
+
+        function aplicarVisibilidadArchivos() {
+            const checkboxes = document.querySelectorAll('.file-vis');
+            checkboxes.forEach(cb => {
+                const index = parseInt(cb.dataset.index);
+                loadedFiles[index].visible = cb.checked;
+            });
+            cerrarModal('filesModal');
+            aplicarFiltros();
+        }
+
+        function cerrarModal(id) {
+            document.getElementById(id).style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) event.target.style.display = 'none';
+        }
+
+        
+            function aplicarFiltros() {
             loadedFiles.forEach(file => {
                 if (map.hasLayer(file.clusterGroup)) map.removeLayer(file.clusterGroup);
                 if (map.hasLayer(file.individualLayer)) map.removeLayer(file.individualLayer);
                 file.clusterGroup.clearLayers();
                 file.individualLayer.clearLayers();
-            });
+             });
 
-            const distrito = document.getElementById('distritoFilter').value;
+                const distrito = document.getElementById('distritoFilter').value;
 
+     
             loadedFiles.forEach(file => {
                 if (!file.visible) return;
 
-                file.markers.forEach(m => {
+
+
+                 file.markers.forEach(m => {
                     if (distrito !== '' && distrito !== 'TODOS' && m.properties.DISTRITO !== distrito) return;
                     if (!visibilidad[m.properties.tipoFiltro]) return;
 
@@ -530,6 +708,16 @@
                     file.individualLayer.addLayer(marker);
                 });
             });
+
+
+
+
+
+
+
+
+
+
 
             controlarVistaPorZoom();
         }
@@ -567,13 +755,11 @@
                 selectedMarkers.splice(index, 1);
                 marker.setStyle({fillColor: props.color, radius: 6});
             }
-            actualizarConteos();
         }
 
         function limpiarSeleccion() {
             selectedMarkers = [];
             aplicarFiltros();
-            actualizarConteos();
         }
 
         function limpiarMapa() {
@@ -583,9 +769,138 @@
             aplicarFiltros();
         }
 
+
+
+
+
+
+
+
+        map.on('zoomend', controlarVistaPorZoom);
+        document.getElementById('distritoFilter').addEventListener('change', aplicarFiltros);
+
+        document.getElementById('search-box').addEventListener('input', function() {
+            const term = this.value.trim().toLowerCase();
+            if (!term) {
+                aplicarFiltros();
+                return;
+            }
+
+            loadedFiles.forEach(file => {
+                map.removeLayer(file.clusterGroup);
+                map.removeLayer(file.individualLayer);
+                file.clusterGroup.clearLayers();
+                file.individualLayer.clearLayers();
+            });
+
+            const distrito = document.getElementById('distritoFilter').value;
+            const bounds = L.latLngBounds();
+
+            loadedFiles.forEach(file => {
+                if (!file.visible) return;
+
+                const encontrados = file.markers.filter(m => {
+                    if (distrito !== '' && distrito !== 'TODOS' && m.properties.DISTRITO !== distrito) return false;
+                    if (!visibilidad[m.properties.tipoFiltro]) return false;
+
+                    return (m.properties.ID?.toString().toLowerCase().includes(term)) ||
+                           (m.properties.DIRECCION?.toLowerCase().includes(term)) ||
+                           (m.properties.MEDIDOR?.toString().toLowerCase().includes(term));
+                });
+
+                encontrados.forEach(m => {
+                    const marker = crearMarcador(m.getLatLng().lat, m.getLatLng().lng, m.properties.color);
+                    marker.properties = m.properties;
+                    marker.bindPopup(m._popup._content);
+                    marker.on('click', e => modoClic ? toggleSeleccionMarker(marker) : map.openPopup(marker.getPopup()));
+
+                    file.clusterGroup.addLayer(marker);
+                    file.individualLayer.addLayer(marker);
+
+                    bounds.extend([m.getLatLng().lat, m.getLatLng().lng]);
+                });
+            });
+
+            const allEncontrados = getAllVisibleMarkers().filter(m => {
+                return (m.properties.ID?.toString().toLowerCase().includes(term)) ||
+                       (m.properties.DIRECCION?.toLowerCase().includes(term)) ||
+                       (m.properties.MEDIDOR?.toString().toLowerCase().includes(term));
+            });
+
+            if (allEncontrados.length === 0) {
+                alert("No se encontraron coincidencias.");
+                return;
+            }
+
+            if (allEncontrados.length === 1) {
+                map.setView(allEncontrados[0].getLatLng(), 18);
+            } else {
+                map.fitBounds(bounds, { padding: [50, 50] });
+            }
+
+            controlarVistaPorZoom();
+        });
+
+        function exportarSeleccionPDF() {
+            if (selectedMarkers.length === 0) return alert("No hay puntos seleccionados.");
+            const doc = new jsPDF('l', 'mm', 'a4');
+            doc.setFontSize(16);
+            doc.text("Reporte de Puntos Seleccionados - Agua Potable", 14, 20);
+            doc.setFontSize(12);
+            doc.text(`Total: ${selectedMarkers.length} puntos | Fecha: ${new Date().toLocaleDateString('es-PE')}`, 14, 30);
+
+            const headers = [["N°", "ID", "Tipo", "Medidor", "Dirección", "Distrito", "Lat", "Lon", "Archivo"]];
+            const data = selectedMarkers.map((p, i) => [
+                i+1,
+                p.ID || 'N/D',
+                p.tipoFiltro,
+                p.MEDIDOR || 'SIN',
+                p.DIRECCION || '',
+                p.DISTRITO || '',
+                parseFloat(p.LATITUD).toFixed(6),
+                parseFloat(p.LONGITUD).toFixed(6),
+                p.filename || ''
+            ]);
+
+            doc.autoTable({ head: headers, body: data, startY: 40, theme: 'grid', headStyles: { fillColor: [29, 78, 216] } });
+            doc.save("reporte_seleccionados.pdf");
+        }
+
+        function exportarSeleccionExcel() {
+            if (selectedMarkers.length === 0) return alert("No hay puntos seleccionados.");
+            const data = selectedMarkers.map(p => ({
+                ID: p.ID || 'N/D',
+                Tipo: p.tipoFiltro,
+                Medidor: p.MEDIDOR || 'SIN MEDIDOR',
+                Direccion: p.DIRECCION || '',
+                Distrito: p.DISTRITO || '',
+                Latitud: p.LATITUD,
+                Longitud: p.LONGITUD,
+                Actividad: p.ACTIVIDAD || 'SIN DATO',
+                Archivo: p.filename || ''
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Seleccionados");
+            XLSX.writeFile(wb, "reporte_seleccionados.xlsx");
+        }
+
+        function imprimirMapaNormal() {
+            if (loadedFiles.length === 0) return alert("Primero carga un archivo Excel con puntos.");
+            const fecha = new Date().toLocaleDateString('es-PE');
+            document.body.setAttribute('data-print-date', fecha);
+            window.print();
+        }
+
+
+
+
+
+
+
         function toggleLocation() {
             isLocationActive = !isLocationActive;
-            
             ubicacionControl.updateActiveState();
 
             if (isLocationActive) {
@@ -595,11 +910,52 @@
                     ubicacionControl.updateActiveState();
                     return;
                 }
-                locationWatcher = navigator.geolocation.watchPosition(updateLocation, handleLocationError, {
-                    enableHighAccuracy: true,
-                    maximumAge: 10000,
-                    timeout: 5000
-                });
+
+                firstLocationReceived = false;
+
+                locationWatcher = navigator.geolocation.watchPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        const accuracy = position.coords.accuracy;
+
+                        if (!locationMarker) {
+                            locationMarker = L.marker([lat, lng], {
+                                icon: L.divIcon({
+                                    html: '<div style="background:#3b82f6;width:20px;height:20px;border-radius:50%;border:3px solid white;"></div>',
+                                    className: '',
+                                    iconSize: [20,20],
+                                    iconAnchor: [10,10]
+                                })
+                            }).addTo(map).bindPopup('Tu ubicación actual');
+                        } else {
+                            locationMarker.setLatLng([lat, lng]);
+                        }
+
+                        if (!locationAccuracyCircle) {
+                            locationAccuracyCircle = L.circle([lat, lng], {
+                                radius: accuracy,
+                                color: '#3b82f6',
+                                fillColor: '#93c5fd',
+                                fillOpacity: 0.2
+                            }).addTo(map);
+                        } else {
+                            locationAccuracyCircle.setLatLng([lat, lng]);
+                            locationAccuracyCircle.setRadius(accuracy);
+                        }
+
+                        if (!firstLocationReceived) {
+                            map.setView([lat, lng], 16);
+                            firstLocationReceived = true;
+                        }
+                    },
+                    function(error) {
+                        alert('Error al obtener ubicación: ' + error.message);
+                        isLocationActive = false;
+                        ubicacionControl.updateActiveState();
+                    },
+                    { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
+                );
             } else {
                 if (locationWatcher) navigator.geolocation.clearWatch(locationWatcher);
                 if (locationMarker) map.removeLayer(locationMarker);
@@ -609,209 +965,54 @@
             }
         }
 
-        function updateLocation(position) {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-            const accuracy = position.coords.accuracy;
-
-            if (!locationMarker) {
-                locationMarker = L.marker([lat, lng], {
-                    icon: L.divIcon({
-                        className: 'location-marker',
-                        html: '<div style="background: #3b82f6; width: 20px; height: 20px; border-radius: 50%; border: 2px solid white;"></div>',
-                        iconSize: [20, 20],
-                        iconAnchor: [10, 10]
-                    })
-                }).addTo(map).bindPopup('Tu ubicación actual');
-            } else {
-                locationMarker.setLatLng([lat, lng]);
-            }
-
-            if (!locationAccuracyCircle) {
-                locationAccuracyCircle = L.circle([lat, lng], {
-                    radius: accuracy,
-                    color: '#3b82f6',
-                    fillColor: '#93c5fd',
-                    fillOpacity: 0.2
-                }).addTo(map);
-            } else {
-                locationAccuracyCircle.setLatLng([lat, lng]);
-                locationAccuracyCircle.setRadius(accuracy);
-            }
-        }
-
-        function handleLocationError(error) {
-            let mensaje = 'Error al obtener ubicación: ';
-            switch(error.code) {
-                case error.PERMISSION_DENIED: mensaje += 'Permiso denegado'; break;
-                case error.POSITION_UNAVAILABLE: mensaje += 'Información no disponible'; break;
-                case error.TIMEOUT: mensaje += 'Tiempo de espera agotado'; break;
-                default: mensaje += error.message;
-            }
-            alert(mensaje);
-            isLocationActive = false;
-            ubicacionControl.updateActiveState();
-        }
-
-        function actualizarConteos() {
-            const markers = getAllVisibleMarkers();
-            const c = { A1:0, A2:0, A3:0, IMPOSIBILIDAD:0, PROYECTO:0, total: markers.length };
-            markers.forEach(m => {
-                if (c.hasOwnProperty(m.properties.tipoFiltro)) c[m.properties.tipoFiltro]++;
-            });
-            document.getElementById('modalCountA1').textContent = c.A1;
-            document.getElementById('modalCountA2').textContent = c.A2;
-            document.getElementById('modalCountA3').textContent = c.A3;
-            document.getElementById('modalCountIMP').textContent = c.IMPOSIBILIDAD;
-            document.getElementById('modalCountPROY').textContent = c.PROYECTO;
-            document.getElementById('modalCountTotal').textContent = c.total;
-            document.getElementById('modalSelectionCount').textContent = selectedMarkers.length;
-        }
-
-        function verConteo() {
-            actualizarConteos();
-            document.getElementById('conteoModal').style.display = 'flex';
-        }
-
-        function cerrarModal(id) {
-            document.getElementById(id).style.display = 'none';
-        }
-
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) event.target.style.display = 'none';
-        };
+        window.addEventListener('beforeunload', () => {
+            if (locationWatcher) navigator.geolocation.clearWatch(locationWatcher);
+        });
 
         map.on('zoomend', controlarVistaPorZoom);
         document.getElementById('distritoFilter').addEventListener('change', aplicarFiltros);
 
-                document.getElementById('search-box').addEventListener('input', function() {
+        document.getElementById('search-box').addEventListener('input', function() {
             const term = this.value.trim().toLowerCase();
-            
             if (!term) {
                 aplicarFiltros();
                 return;
             }
 
             loadedFiles.forEach(file => {
-                // Limpiamos las capas actuales
-                if (map.hasLayer(file.clusterGroup)) map.removeLayer(file.clusterGroup);
-                if (map.hasLayer(file.individualLayer)) map.removeLayer(file.individualLayer);
+                map.removeLayer(file.clusterGroup);
+                map.removeLayer(file.individualLayer);
                 file.clusterGroup.clearLayers();
                 file.individualLayer.clearLayers();
+            });
 
-                const distritoSeleccionado = document.getElementById('distritoFilter').value;
+            const distrito = document.getElementById('distritoFilter').value;
 
-                const resultados = file.markers.filter(m => {
-                    // Filtro por distrito si está seleccionado
-                    if (distritoSeleccionado && distritoSeleccionado !== 'TODOS' && 
-                        m.properties.DISTRITO !== distritoSeleccionado) {
-                        return false;
-                    }
+            loadedFiles.forEach(file => {
+                if (!file.visible) return;
 
-                    // Filtro por visibilidad de tipo
+                const encontrados = file.markers.filter(m => {
+                    if (distrito !== '' && distrito !== 'TODOS' && m.properties.DISTRITO !== distrito) return false;
                     if (!visibilidad[m.properties.tipoFiltro]) return false;
 
-                    // Búsqueda en los campos principales
-                    return (
-                        (m.properties.ID && m.properties.ID.toString().toLowerCase().includes(term)) ||
-                        (m.properties.DIRECCION && m.properties.DIRECCION.toLowerCase().includes(term)) ||
-                        (m.properties.MEDIDOR && m.properties.MEDIDOR.toString().toLowerCase().includes(term))
-                    );
+                    return (m.properties.ID?.toString().toLowerCase().includes(term)) ||
+                           (m.properties.DIRECCION?.toLowerCase().includes(term)) ||
+                           (m.properties.MEDIDOR?.toString().toLowerCase().includes(term));
                 });
 
-                // Volvemos a crear los marcadores encontrados
-                resultados.forEach(m => {
-                    const marker = crearMarcador(
-                        m.getLatLng().lat,
-                        m.getLatLng().lng,
-                        m.properties.color
-                    );
-                    
+                encontrados.forEach(m => {
+                    const marker = crearMarcador(m.getLatLng().lat, m.getLatLng().lng, m.properties.color);
                     marker.properties = m.properties;
                     marker.bindPopup(m._popup._content);
-                    
-                    marker.on('click', function(e) {
-                        if (modoClic) {
-                            toggleSeleccionMarker(this);
-                        } else {
-                            map.openPopup(this.getPopup());
-                        }
-                    });
+                    marker.on('click', e => modoClic ? toggleSeleccionMarker(marker) : map.openPopup(marker.getPopup()));
 
                     file.clusterGroup.addLayer(marker);
                     file.individualLayer.addLayer(marker);
                 });
             });
 
-            // Actualizamos la vista según el nivel de zoom
             controlarVistaPorZoom();
         });
-
-        // Limpieza automática al cerrar la pestaña/ventana
-        window.addEventListener('beforeunload', () => {
-            if (locationWatcher) {
-                navigator.geolocation.clearWatch(locationWatcher);
-            }
-        });
-
-        // ==============================================
-        //   Funciones complementarias necesarias
-        // ==============================================
-
-        function getAllVisibleMarkers() {
-            let markers = [];
-            loadedFiles.forEach(file => {
-                if (file.visible) {
-                    markers = markers.concat(file.markers);
-                }
-            });
-            return markers;
-        }
-
-        function actualizarConteos() {
-            const markers = getAllVisibleMarkers();
-            const conteo = {
-                A1: 0,
-                A2: 0,
-                A3: 0,
-                IMPOSIBILIDAD: 0,
-                PROYECTO: 0,
-                total: markers.length
-            };
-
-            markers.forEach(m => {
-                if (conteo.hasOwnProperty(m.properties.tipoFiltro)) {
-                    conteo[m.properties.tipoFiltro]++;
-                }
-            });
-
-            document.getElementById('modalCountA1').textContent = conteo.A1;
-            document.getElementById('modalCountA2').textContent = conteo.A2;
-            document.getElementById('modalCountA3').textContent = conteo.A3;
-            document.getElementById('modalCountIMP').textContent = conteo.IMPOSIBILIDAD;
-            document.getElementById('modalCountPROY').textContent = conteo.PROYECTO;
-            document.getElementById('modalCountTotal').textContent = conteo.total;
-            document.getElementById('modalSelectionCount').textContent = selectedMarkers.length;
-        }
-
-        function verConteo() {
-            actualizarConteos();
-            document.getElementById('conteoModal').style.display = 'flex';
-        }
-
-        function cerrarModal(id) {
-            document.getElementById(id).style.display = 'none';
-        }
-
-        // Cerrar modales al hacer clic fuera
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = 'none';
-            }
-        };
-
-        // Inicialización final de eventos
-        map.on('zoomend', controlarVistaPorZoom);
 
     </script>
 </body>

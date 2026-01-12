@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="utf-8">
-    <title>Mapa Conexiones Agua Potable - La Libertad (Mejorado)</title>
+    <title>Conexiones Agua Potable - La Libertad</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -37,22 +37,22 @@
         .leaflet-sidebar-header {
             background: #1d4ed8;
             color: white;
-            padding: 20px;
+            padding: 1px;
             font-size: 20px;
             font-weight: 600;
-            border-bottom: 4px solid #3b82f6;
+            border-bottom: 1px solid #3b82f6;
             display: flex;
             align-items: center;
             gap: 12px;
         }
         
         .leaflet-sidebar-content {
-            padding: 24px 20px;
+            padding: 24px 0px;
         }
         
         h4 {
             color: #1d4ed8;
-            font-size: 18px;
+            font-size: 22px;
             margin: 0 0 20px 0;
             text-align: center;
             font-weight: 600;
@@ -62,7 +62,7 @@
         
         button {
             width: 100%;
-            height: 54px;
+            height: 30px;
             font-size: 15px;
             font-weight: 600;
             margin: 10px 0;
@@ -98,7 +98,7 @@
 
         #export-buttons button {
             background: #64748b;
-            height: 50px;
+            height: 30px;
         }
         
         #export-buttons button:hover {
@@ -205,7 +205,7 @@
                     <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
                 </h1>
                 
-                <h4>Gestión de Puntos</h4>
+                <h4></h4>
                 
                 <input type="file" id="excelFile" accept=".xlsx" multiple />
                 

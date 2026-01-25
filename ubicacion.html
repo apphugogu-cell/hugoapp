@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
     
+    <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
     <style>
@@ -196,36 +197,8 @@
         }
         .close { float: right; font-size: 28px; cursor: pointer; color: #666; }
 
-        #loadingOverlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(29, 78, 216, 0.95);
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            font-family: 'Segoe UI', sans-serif;
-        }
-        
-        .spinner {
-            border: 4px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top: 4px solid white;
-            width: 50px;
-            height: 50px;
-            animation: spin 1s linear infinite;
-            margin-bottom: 20px;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
         @media print {
-            #leyenda, .leaflet-control-container, .leaflet-sidebar, .legend-toggle, #loadingOverlay { display: none !important; }
+            #leyenda, .leaflet-control-container, .leaflet-sidebar, .legend-toggle { display: none !important; }
             #map { height: 100vh !important; }
             body::before { 
                 content: "Mapa de Conexiones de Agua Potable - Región La Libertad"; 
@@ -240,12 +213,6 @@
     </style>
 </head>
 <body data-print-date="">
-    <div id="loadingOverlay">
-        <div class="spinner"></div>
-        <h2>Cargando puntos...</h2>
-        <p id="loadingText">Inicializando mapa...</p>
-    </div>
-
     <div id="map"></div>
 
     <div id="sidebar" class="leaflet-sidebar collapsed">
@@ -262,9 +229,7 @@
                     <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
                 </h1>
                 
-                <small style="color:#64748b; display:block; margin-bottom:10px; text-align:center;">
-                    Datos cargados desde data.json
-                </small>
+                <input type="file" id="excelFile" accept=".xlsx" multiple />
                 
                 <select id="distritoFilter">
                     <option value="">Selecciona distrito</option>
@@ -273,6 +238,7 @@
                 <button onclick="verConteo()"><i class="fa fa-chart-pie"></i> Ver Conteo General</button>
                 <button onclick="verReportePorLocalidad()"><i class="fa fa-table"></i> Reporte por Localidad</button>
                 <button onclick="abrirFiltroVisibilidad()"><i class="fa fa-filter"></i> Filtrar Visibilidad</button>
+                <button onclick="abrirArchivosModal()"><i class="fa fa-folder"></i> Gestionar Archivos</button>
                 <button id="btnSeleccionar" onclick="toggleModoClic()"><i class="fa fa-hand-pointer"></i> SELECCIONAR PUNTOS</button>
                 <button onclick="limpiarSeleccion()"><i class="fa fa-eraser"></i> Limpiar Selección</button>
                 
@@ -286,7 +252,7 @@
                 
                 <hr style="border-color:#bfdbfe; margin:20px 0;">
                 
-                <input type="text" id="search-box" placeholder="Buscar Suministro / Dir / Medidor">
+                <input type="text" id="search-box" placeholder="Buscar ID / Dir / Medidor">
                 
                 <hr style="border-color:#bfdbfe; margin:20px 0;">
                 
@@ -308,7 +274,6 @@
         <div class="leyenda-item"><div class="leyenda-color" style="background:#4caf50;"></div>A3</div>
         <div class="leyenda-item"><div class="leyenda-color" style="background:#212121;"></div>Imposibilidad</div>
         <div class="leyenda-item"><div class="leyenda-color" style="background:#4682b4;"></div>Proyecto Total</div>
-        <div class="leyenda-item"><div class="leyenda-color" style="background:#ff9800;"></div>Ver en Campo</div>
     </div>
 
     <div class="legend-toggle" id="toggleLeyenda" title="Mostrar/Ocultar leyenda">
@@ -324,7 +289,6 @@
             <div>A3: <span id="modalCountA3">0</span></div>
             <div>Imposibilidad: <span id="modalCountIMP">0</span></div>
             <div>Proyecto Total: <span id="modalCountPROY">0</span></div>
-            <div>Ver en Campo: <span id="modalCountVERCAMPO">0</span></div>
             <hr>
             <div>Total cargados: <span id="modalCountTotal">0</span></div>
             <div>Selección actual: <span id="modalSelectionCount">0</span> puntos</div>
@@ -335,7 +299,7 @@
         <div class="modal-content">
             <span class="close" onclick="cerrarModal('reporteModal')">×</span>
             <h4>Reporte por Localidad</h4>
-            <div id="reporteContenido">Cargando datos...</div>
+            <div id="reporteContenido">Carga un archivo para ver el reporte.</div>
             <button onclick="exportarReporteLocalidadExcel()" style="margin-top:15px; background:#f59e0b; color:white; display:none;" id="btnExportReporte">
                 Exportar a Excel
             </button>
@@ -351,10 +315,20 @@
                 <label><input type="checkbox" id="visA2" checked> A2 (Amarillo)</label><br>
                 <label><input type="checkbox" id="visA3" checked> A3 (Verde)</label><br>
                 <label><input type="checkbox" id="visIMP" checked> Imposibilidad (Negro)</label><br>
-                <label><input type="checkbox" id="visProyecto" checked> Proyecto Total (Azul)</label><br>
-                <label><input type="checkbox" id="visVerCampo" checked> Ver en Campo (Naranja)</label>
+                <label><input type="checkbox" id="visProyecto" checked> Proyecto Total (Azul)</label>
             </div>
             <button onclick="aplicarFiltroVisibilidad()" style="margin-top:20px; background:#1d4ed8; color:white; padding:12px; width:100%;">
+                Aplicar
+            </button>
+        </div>
+    </div>
+
+    <div id="filesModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="cerrarModal('filesModal')">×</span>
+            <h4>Archivos Cargados</h4>
+            <div id="filesList" style="text-align: left; margin: 15px 0;"></div>
+            <button onclick="aplicarVisibilidadArchivos()" style="margin-top:20px; background:#1d4ed8; color:white; padding:12px; width:100%;">
                 Aplicar
             </button>
         </div>
@@ -378,22 +352,10 @@
         baseLayers["Calles"].addTo(map);
         L.control.layers(baseLayers, null, {position: 'topright'}).addTo(map);
 
-        var mainDataLayer = {
-            markers: [],
-            clusterGroup: L.markerClusterGroup({
-                chunkedLoading: true,
-                disableClusteringAtZoom: 16,
-                maxClusterRadius: 50,
-                spiderfyOnMaxZoom: true,
-                showCoverageOnHover: false,
-                zoomToBoundsOnClick: true
-            }),
-            individualLayer: L.layerGroup(),
-            visible: true
-        };
-        
+        var loadedFiles = [];
         var selectedMarkers = [];
         var modoClic = false;
+        var reporteData = [];
 
         var locationWatcher = null;
         var locationMarker = null;
@@ -406,8 +368,7 @@
             A2: true,
             A3: true,
             IMPOSIBILIDAD: true,
-            PROYECTO: true,
-            VERENCAMPO: true
+            PROYECTO: true
         };
 
         var sidebar = L.control.sidebar({
@@ -432,7 +393,6 @@
                 case 'A3': return '#4caf50';
                 case 'IMPOSIBILIDAD': return '#212121';
                 case 'PROYECTO': return '#4682b4';
-                case 'VERENCAMPO': return '#ff9800';
                 default: return '#888888';
             }
         }
@@ -448,7 +408,6 @@
             });
         }
 
-        // Control de ubicación (el resto del código de ubicación sigue igual)
         L.Control.UbicacionButton = L.Control.extend({
             options: { position: 'topright' },
             onAdd: function(map) {
@@ -483,7 +442,6 @@
         const ubicacionControl = new L.Control.UbicacionButton();
         ubicacionControl.addTo(map);
 
-        // Toggle leyenda
         document.getElementById('toggleLeyenda').addEventListener('click', function() {
             const leyenda = document.getElementById('leyenda');
             const icon = this.querySelector('i');
@@ -493,135 +451,95 @@
             this.title = leyenda.classList.contains('hidden') ? "Mostrar leyenda" : "Ocultar leyenda";
         });
 
-        function determinarTipo(actividadRaw) {
-            const actividad = (actividadRaw || '').toString().trim().toUpperCase();
-            
-            if (actividad.includes('CAMPO')) {
-                return 'VERENCAMPO';
-            }
-            
-            if (actividad === 'A1' || actividad.startsWith('A1 ')) return 'A1';
-            if (actividad === 'A2' || actividad.startsWith('A2 ')) return 'A2';
-            if (actividad === 'A3' || actividad.startsWith('A3 ')) return 'A3';
-            if (actividad === 'IMPOSIBILIDAD' || actividad.startsWith('IMPOSIBILIDAD')) return 'IMPOSIBILIDAD';
-            
-            return 'PROYECTO';
-        }
+        document.getElementById('excelFile').addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (files.length === 0) return;
+            Array.from(files).forEach(file => {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var data = new Uint8Array(e.target.result);
+                    var workbook = XLSX.read(data, {type: 'array'});
+                    var sheet = workbook.Sheets[workbook.SheetNames[0]];
+                    var json = XLSX.utils.sheet_to_json(sheet);
+                    procesarDatos(file.name, json);
+                };
+                reader.readAsArrayBuffer(file);
+            });
+            e.target.value = '';
+        });
 
-        // ==============================================
-        // CARGA DE DATOS DESDE data.json
-        // ==============================================
-        let datos = [];
+        function procesarDatos(filename, data) {
+            const fileEntry = {
+                filename,
+                data,
+                markers: [],
+                clusterGroup: L.markerClusterGroup({
+                    chunkedLoading: true,
+                    disableClusteringAtZoom: 16,
+                    maxClusterRadius: 50
+                }),
+                individualLayer: L.layerGroup(),
+                visible: true
+            };
 
-        fetch('data.json')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error(`No se pudo cargar data.json: ${response.status} ${response.statusText}`);
-                }
-                return response.json();
-            })
-            .then(json => {
-                datos = json;
-                console.log(`Cargados ${datos.length} puntos desde data.json`);
-                cargarDatosIniciales();
-            })
-            .catch(error => {
-                console.error('Error al cargar data.json:', error);
-                alert('No se pudo cargar los datos.\nVerifica que data.json esté en la misma carpeta que este HTML.');
-                document.getElementById('loadingOverlay').style.display = 'none';
+            data.forEach(row => {
+                if (!row.LATITUD || !row.LONGITUD) return;
+
+                const actividadRaw = (row.ACTIVIDAD || '').toString().trim().toUpperCase();
+                let tipo = 'PROYECTO';
+                if (actividadRaw === 'A1') tipo = 'A1';
+                else if (actividadRaw === 'A2') tipo = 'A2';
+                else if (actividadRaw === 'A3') tipo = 'A3';
+                else if (actividadRaw === 'IMPOSIBILIDAD') tipo = 'IMPOSIBILIDAD';
+
+                const color = getColor(tipo);
+                var marker = crearMarcador(row.LATITUD, row.LONGITUD, color);
+                
+                marker.properties = { ...row, tipoFiltro: tipo, color: color, filename: filename };
+
+                const datosOcultos = [
+                    { label: "Medidor",   value: row.MEDIDOR   || 'SIN MEDIDOR' },
+                    { label: "Actividad", value: row.ACTIVIDAD || 'SIN DATO'    },
+                    { label: "Usuario",   value: row.Usuario   || '—'           },
+                    { label: "Dirección", value: row.DIRECCION || '—'           },
+                    { label: "Distrito",  value: row.DISTRITO  || '—'           }
+                ].filter(item => item.value !== '—');
+
+                const popupContent = `
+                    <div style="min-width:220px; font-size:13px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                            <strong>ID:</strong> ${row.ID || 'N/D'}
+                            <span id="toggle-${row.ID || 'sinid'}" 
+                                  style="cursor:pointer; color:#3b82f6; font-size:16px; user-select:none;"
+                                  onclick="toggleDetails(this)"> ▶</span>
+                        </div>
+                        
+                        <div id="details-${row.ID || 'sinid'}" style="display:none; margin-top:8px; padding-top:8px; border-top:1px solid #eee;">
+                            ${datosOcultos.map(item => `
+                                <div style="margin:4px 0;">
+                                    <strong>${item.label}:</strong> ${item.value}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+
+                marker.bindPopup(popupContent, { maxWidth: 320 });
+
+                marker.on('click', function(e) {
+                    if (modoClic) toggleSeleccionMarker(this);
+                    else map.openPopup(this.getPopup());
+                });
+
+                fileEntry.markers.push(marker);
+                fileEntry.clusterGroup.addLayer(marker);
+                fileEntry.individualLayer.addLayer(marker);
             });
 
-        function cargarDatosIniciales() {
-            const loadingText = document.getElementById('loadingText');
-            const totalPuntos = datos.length;
-            
-            if (totalPuntos === 0) {
-                alert('No hay datos en data.json. Verifica el archivo.');
-                document.getElementById('loadingOverlay').style.display = 'none';
-                return;
-            }
-
-            loadingText.textContent = `Procesando ${totalPuntos.toLocaleString()} puntos...`;
-            
-            const chunkSize = 1000;
-            let index = 0;
-            
-            function procesarChunk() {
-                const chunk = datos.slice(index, index + chunkSize);
-                
-                chunk.forEach(row => {
-                    if (!row.LATITUD || !row.LONGITUD) return;
-
-                    const tipo = determinarTipo(row.ACTIVIDAD);
-                    const color = getColor(tipo);
-                    var marker = crearMarcador(parseFloat(row.LATITUD), parseFloat(row.LONGITUD), color);
-                    
-                    marker.properties = { 
-                        ...row, 
-                        tipoFiltro: tipo, 
-                        color: color,
-                        tipoActividad: row.ACTIVIDAD 
-                    };
-
-                    const datosOcultos = [
-                        { label: "Suministro", value: row.SUMINISTRO || 'N/D' },
-                        { label: "Actividad", value: row.ACTIVIDAD || 'SIN DATO' },
-                        { label: "Tipo", value: tipo === 'VERENCAMPO' ? 'VER EN CAMPO' : tipo },
-                        { label: "Usuario", value: row.USUARIO || '—' },
-                        { label: "Dirección", value: row.DIRECCION || '—' },
-                        { label: "Distrito", value: row.DISTRITO || '—' },
-                        { label: "Medidor", value: row.MEDIDOR || 'SIN MEDIDOR' }
-                    ].filter(item => item.value !== '—');
-
-                    const popupContent = `
-                        <div style="min-width:220px; font-size:13px;">
-                            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-                                <strong>Suministro:</strong> ${row.SUMINISTRO || 'N/D'}
-                                <span id="toggle-${row.SUMINISTRO || 'sinid'}" 
-                                      style="cursor:pointer; color:#3b82f6; font-size:16px; user-select:none;"
-                                      onclick="toggleDetails(this)"> ▶</span>
-                            </div>
-                            
-                            <div id="details-${row.SUMINISTRO || 'sinid'}" style="display:none; margin-top:8px; padding-top:8px; border-top:1px solid #eee;">
-                                ${datosOcultos.map(item => `
-                                    <div style="margin:4px 0;">
-                                        <strong>${item.label}:</strong> ${item.value}
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>
-                    `;
-
-                    marker.bindPopup(popupContent, { maxWidth: 320 });
-
-                    marker.on('click', function(e) {
-                        if (modoClic) toggleSeleccionMarker(this);
-                        else map.openPopup(this.getPopup());
-                    });
-
-                    mainDataLayer.markers.push(marker);
-                    mainDataLayer.clusterGroup.addLayer(marker);
-                    mainDataLayer.individualLayer.addLayer(marker);
-                });
-                
-                index += chunkSize;
-                
-                if (index < totalPuntos) {
-                    loadingText.textContent = `Procesando ${index.toLocaleString()} de ${totalPuntos.toLocaleString()} puntos...`;
-                    setTimeout(procesarChunk, 10);
-                } else {
-                    document.getElementById('loadingOverlay').style.display = 'none';
-                    actualizarDistritos();
-                    aplicarFiltros();
-                    
-                    if (mainDataLayer.markers.length > 0) {
-                        const group = new L.featureGroup(mainDataLayer.markers);
-                        map.fitBounds(group.getBounds().pad(0.1));
-                    }
-                }
-            }
-            
-            procesarChunk();
+            loadedFiles.push(fileEntry);
+            actualizarDistritos();
+            aplicarFiltros();
+            alert(`¡Listo! Cargados ${fileEntry.markers.length} puntos del archivo ${filename}.`);
         }
 
         function toggleDetails(element) {
@@ -638,8 +556,10 @@
 
         function actualizarDistritos() {
             const allDistritos = new Set();
-            mainDataLayer.markers.forEach(m => {
-                if (m.properties.DISTRITO) allDistritos.add(m.properties.DISTRITO);
+            loadedFiles.forEach(file => {
+                file.data.forEach(row => {
+                    if (row.DISTRITO) allDistritos.add(row.DISTRITO);
+                });
             });
             const distritos = [...allDistritos].sort();
             const selectDist = document.getElementById('distritoFilter');
@@ -652,23 +572,26 @@
         }
 
         function getAllVisibleMarkers() {
-            return mainDataLayer.markers;
+            let markers = [];
+            loadedFiles.forEach(file => {
+                if (file.visible) markers = markers.concat(file.markers);
+            });
+            return markers;
         }
 
         function actualizarConteos() {
             const markers = getAllVisibleMarkers();
-            const c = { A1:0, A2:0, A3:0, IMPOSIBILIDAD:0, PROYECTO:0, VERENCAMPO:0, total: markers.length };
+            const c = { A1:0, A2:0, A3:0, IMPOSIBILIDAD:0, PROYECTO:0, total: markers.length };
             markers.forEach(m => {
                 if (c.hasOwnProperty(m.properties.tipoFiltro)) c[m.properties.tipoFiltro]++;
             });
-            document.getElementById('modalCountA1').textContent = c.A1.toLocaleString();
-            document.getElementById('modalCountA2').textContent = c.A2.toLocaleString();
-            document.getElementById('modalCountA3').textContent = c.A3.toLocaleString();
-            document.getElementById('modalCountIMP').textContent = c.IMPOSIBILIDAD.toLocaleString();
-            document.getElementById('modalCountPROY').textContent = c.PROYECTO.toLocaleString();
-            document.getElementById('modalCountVERCAMPO').textContent = c.VERENCAMPO.toLocaleString();
-            document.getElementById('modalCountTotal').textContent = c.total.toLocaleString();
-            document.getElementById('modalSelectionCount').textContent = selectedMarkers.length.toLocaleString();
+            document.getElementById('modalCountA1').textContent = c.A1;
+            document.getElementById('modalCountA2').textContent = c.A2;
+            document.getElementById('modalCountA3').textContent = c.A3;
+            document.getElementById('modalCountIMP').textContent = c.IMPOSIBILIDAD;
+            document.getElementById('modalCountPROY').textContent = c.PROYECTO;
+            document.getElementById('modalCountTotal').textContent = c.total;
+            document.getElementById('modalSelectionCount').textContent = selectedMarkers.length;
         }
 
         function verConteo() {
@@ -677,42 +600,44 @@
         }
 
         function aplicarFiltros() {
-            if (map.hasLayer(mainDataLayer.clusterGroup)) map.removeLayer(mainDataLayer.clusterGroup);
-            if (map.hasLayer(mainDataLayer.individualLayer)) map.removeLayer(mainDataLayer.individualLayer);
-            mainDataLayer.clusterGroup.clearLayers();
-            mainDataLayer.individualLayer.clearLayers();
+            loadedFiles.forEach(file => {
+                if (map.hasLayer(file.clusterGroup)) map.removeLayer(file.clusterGroup);
+                if (map.hasLayer(file.individualLayer)) map.removeLayer(file.individualLayer);
+                file.clusterGroup.clearLayers();
+                file.individualLayer.clearLayers();
 
-            const distrito = document.getElementById('distritoFilter').value;
-            const searchTerm = document.getElementById('search-box').value.toLowerCase();
+                if (!file.visible) return;
 
-            mainDataLayer.markers.forEach(m => {
-                if (!visibilidad[m.properties.tipoFiltro]) return;
-                
-                if (distrito !== '' && distrito !== 'TODOS' && m.properties.DISTRITO !== distrito) return;
-                
-                if (searchTerm) {
-                    const suministro = (m.properties.SUMINISTRO || '').toLowerCase();
-                    const dir = (m.properties.DIRECCION || '').toLowerCase();
-                    const med = (m.properties.MEDIDOR || '').toLowerCase();
-                    if (!suministro.includes(searchTerm) && !dir.includes(searchTerm) && !med.includes(searchTerm)) return;
-                }
+                const distrito = document.getElementById('distritoFilter').value;
 
-                mainDataLayer.clusterGroup.addLayer(m);
-                mainDataLayer.individualLayer.addLayer(m);
+                file.markers.forEach(m => {
+                    if (distrito !== '' && distrito !== 'TODOS' && m.properties.DISTRITO !== distrito) return;
+                    if (!visibilidad[m.properties.tipoFiltro]) return;
+
+                    const marker = crearMarcador(m.getLatLng().lat, m.getLatLng().lng, m.properties.color);
+                    marker.properties = m.properties;
+                    marker.bindPopup(m._popup._content);
+                    marker.on('click', e => modoClic ? toggleSeleccionMarker(marker) : map.openPopup(marker.getPopup()));
+
+                    file.clusterGroup.addLayer(marker);
+                    file.individualLayer.addLayer(marker);
+                });
             });
-            
             controlarVistaPorZoom();
         }
 
         function controlarVistaPorZoom() {
             const zoom = map.getZoom();
-            if (zoom >= 16) {
-                map.removeLayer(mainDataLayer.clusterGroup);
-                map.addLayer(mainDataLayer.individualLayer);
-            } else {
-                map.removeLayer(mainDataLayer.individualLayer);
-                map.addLayer(mainDataLayer.clusterGroup);
-            }
+            loadedFiles.forEach(file => {
+                if (!file.visible) return;
+                if (zoom >= 16) {
+                    map.removeLayer(file.clusterGroup);
+                    map.addLayer(file.individualLayer);
+                } else {
+                    map.removeLayer(file.individualLayer);
+                    map.addLayer(file.clusterGroup);
+                }
+            });
         }
 
         function toggleModoClic() {
@@ -720,12 +645,13 @@
             map.getContainer().style.cursor = modoClic ? 'crosshair' : 'grab';
             document.getElementById('btnSeleccionar').classList.toggle('active', modoClic);
             if (modoClic) alert("Modo selección activado. Haz clic en los puntos para seleccionarlos.");
+            aplicarFiltros();
         }
 
         function toggleSeleccionMarker(marker) {
             const props = marker.properties;
-            const key = props.SUMINISTRO ? props.SUMINISTRO : `${props.LATITUD}_${props.LONGITUD}`;
-            const index = selectedMarkers.findIndex(s => (s.SUMINISTRO ? s.SUMINISTRO : `${s.LATITUD}_${s.LONGITUD}`) === key);
+            const key = props.ID ? props.ID : `${props.LATITUD}_${props.LONGITUD}`;
+            const index = selectedMarkers.findIndex(s => (s.ID ? s.ID : `${s.LATITUD}_${s.LONGITUD}`) === key);
             if (index === -1) {
                 selectedMarkers.push(props);
                 marker.setStyle({fillColor: '#00ff00', radius: 9});
@@ -733,7 +659,6 @@
                 selectedMarkers.splice(index, 1);
                 marker.setStyle({fillColor: props.color, radius: 6});
             }
-            document.getElementById('modalSelectionCount').textContent = selectedMarkers.length.toLocaleString();
         }
 
         function limpiarSeleccion() {
@@ -747,7 +672,6 @@
             document.getElementById('visA3').checked = visibilidad.A3;
             document.getElementById('visIMP').checked = visibilidad.IMPOSIBILIDAD;
             document.getElementById('visProyecto').checked = visibilidad.PROYECTO;
-            document.getElementById('visVerCampo').checked = visibilidad.VERENCAMPO;
             document.getElementById('filtroModal').style.display = 'flex';
         }
 
@@ -757,8 +681,26 @@
             visibilidad.A3 = document.getElementById('visA3').checked;
             visibilidad.IMPOSIBILIDAD = document.getElementById('visIMP').checked;
             visibilidad.PROYECTO = document.getElementById('visProyecto').checked;
-            visibilidad.VERENCAMPO = document.getElementById('visVerCampo').checked;
             cerrarModal('filtroModal');
+            aplicarFiltros();
+        }
+
+        function abrirArchivosModal() {
+            if (loadedFiles.length === 0) return alert('No hay archivos cargados.');
+            let html = '';
+            loadedFiles.forEach((file, index) => {
+                html += `<label><input type="checkbox" class="file-vis" data-index="${index}" ${file.visible ? 'checked' : ''}> ${file.filename}</label><br>`;
+            });
+            document.getElementById('filesList').innerHTML = html;
+            document.getElementById('filesModal').style.display = 'flex';
+        }
+
+        function aplicarVisibilidadArchivos() {
+            document.querySelectorAll('.file-vis').forEach(cb => {
+                const index = parseInt(cb.dataset.index);
+                loadedFiles[index].visible = cb.checked;
+            });
+            cerrarModal('filesModal');
             aplicarFiltros();
         }
 
@@ -771,35 +713,44 @@
         };
 
         function verReportePorLocalidad() {
-            const datos = mainDataLayer.markers.map(m => m.properties);
+            const datos = [];
+            loadedFiles.forEach(file => {
+                if (file.visible) datos.push(...file.data);
+            });
 
             if (datos.length === 0) {
-                document.getElementById('reporteContenido').innerHTML = 'No hay datos cargados.';
+                document.getElementById('reporteContenido').innerHTML = 'No hay datos visibles.';
                 document.getElementById('btnExportReporte').style.display = 'none';
                 document.getElementById('reporteModal').style.display = 'flex';
                 return;
             }
 
             const porDistrito = {};
-            const totales = { A1:0, A2:0, A3:0, IMPOSIBILIDAD:0, PROYECTO:0, VERENCAMPO:0, total:0 };
+            const totales = { A1:0, A2:0, A3:0, IMPOSIBILIDAD:0, PROYECTO:0, total:0 };
 
-            datos.forEach(props => {
-                const distrito = props.DISTRITO || 'SIN DISTRITO';
-                if (!porDistrito[distrito]) porDistrito[distrito] = { A1:0, A2:0, A3:0, IMPOSIBILIDAD:0, PROYECTO:0, VERENCAMPO:0, total:0 };
+            datos.forEach(row => {
+                const distrito = row.DISTRITO || 'SIN DISTRITO';
+                if (!porDistrito[distrito]) porDistrito[distrito] = { A1:0, A2:0, A3:0, IMPOSIBILIDAD:0, PROYECTO:0, total:0 };
 
-                const tipo = props.tipoFiltro;
+                let tipo = 'PROYECTO';
+                const act = (row.ACTIVIDAD || '').toString().trim().toUpperCase();
+                if (act === 'A1') tipo = 'A1';
+                else if (act === 'A2') tipo = 'A2';
+                else if (act === 'A3') tipo = 'A3';
+                else if (act === 'IMPOSIBILIDAD') tipo = 'IMPOSIBILIDAD';
+
                 porDistrito[distrito][tipo]++;
                 porDistrito[distrito].total++;
                 totales[tipo]++;
                 totales.total++;
             });
 
-            let html = '<table style="width:100%; border-collapse:collapse; font-size:12px;"><tr><th>Distrito</th><th>A1</th><th>A2</th><th>A3</th><th>Impos.</th><th>Proy.</th><th>Ver Campo</th><th>Total</th></tr>';
+            let html = '<table style="width:100%; border-collapse:collapse;"><tr><th>Distrito</th><th>A1</th><th>A2</th><th>A3</th><th>Impos.</th><th>Proy.</th><th>Total</th></tr>';
             Object.keys(porDistrito).sort().forEach(dist => {
                 const d = porDistrito[dist];
-                html += `<tr><td>${dist}</td><td>${d.A1}</td><td>${d.A2}</td><td>${d.A3}</td><td>${d.IMPOSIBILIDAD}</td><td>${d.PROYECTO}</td><td>${d.VERENCAMPO}</td><td>${d.total}</td></tr>`;
+                html += `<tr><td>${dist}</td><td>${d.A1}</td><td>${d.A2}</td><td>${d.A3}</td><td>${d.IMPOSIBILIDAD}</td><td>${d.PROYECTO}</td><td>${d.total}</td></tr>`;
             });
-            html += `<tr style="font-weight:bold; background:#f0f0f0;"><td><strong>TOTAL</strong></td><td><strong>${totales.A1}</strong></td><td><strong>${totales.A2}</strong></td><td><strong>${totales.A3}</strong></td><td><strong>${totales.IMPOSIBILIDAD}</strong></td><td><strong>${totales.PROYECTO}</strong></td><td><strong>${totales.VERENCAMPO}</strong></td><td><strong>${totales.total}</strong></td></tr></table>`;
+            html += `<tr style="font-weight:bold; background:#f0f0f0;"><td><strong>TOTAL GENERAL</strong></td><td><strong>${totales.A1}</strong></td><td><strong>${totales.A2}</strong></td><td><strong>${totales.A3}</strong></td><td><strong>${totales.IMPOSIBILIDAD}</strong></td><td><strong>${totales.PROYECTO}</strong></td><td><strong>${totales.total}</strong></td></tr></table>`;
 
             document.getElementById('reporteContenido').innerHTML = html;
             document.getElementById('btnExportReporte').style.display = 'block';
@@ -807,27 +758,7 @@
         }
 
         function exportarReporteLocalidadExcel() {
-            const datos = mainDataLayer.markers.map(m => m.properties);
-            const porDistrito = {};
-            
-            datos.forEach(props => {
-                const distrito = props.DISTRITO || 'SIN DISTRITO';
-                if (!porDistrito[distrito]) porDistrito[distrito] = { A1:0, A2:0, A3:0, IMPOSIBILIDAD:0, PROYECTO:0, VERENCAMPO:0, total:0 };
-                porDistrito[distrito][props.tipoFiltro]++;
-                porDistrito[distrito].total++;
-            });
-
-            let csv = 'Distrito,A1,A2,A3,Imposibilidad,Proyecto,VerEnCampo,Total\n';
-            Object.keys(porDistrito).sort().forEach(dist => {
-                const d = porDistrito[dist];
-                csv += `${dist},${d.A1},${d.A2},${d.A3},${d.IMPOSIBILIDAD},${d.PROYECTO},${d.VERENCAMPO},${d.total}\n`;
-            });
-            
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'reporte_localidades.csv';
-            link.click();
+            alert("Exportación del reporte por localidad no implementada en esta versión.");
         }
 
         function exportarSeleccionPDF() {
@@ -842,11 +773,11 @@
             doc.setFontSize(12);
             doc.text(`Total: ${selectedMarkers.length} puntos | Fecha: ${new Date().toLocaleDateString('es-PE')}`, 14, 30);
 
-            const headers = [["N°", "Suministro", "Tipo", "Medidor", "Dirección", "Distrito", "Lat", "Lon"]];
+            const headers = [["N°", "ID", "Tipo", "Medidor", "Dirección", "Distrito", "Lat", "Lon"]];
             const data = selectedMarkers.map((p, i) => [
                 i + 1,
-                p.SUMINISTRO || 'N/D',
-                p.tipoFiltro === 'VERENCAMPO' ? 'VER EN CAMPO' : (p.tipoFiltro || '—'),
+                p.ID || 'N/D',
+                p.tipoFiltro || '—',
                 p.MEDIDOR || 'SIN',
                 p.DIRECCION || '',
                 p.DISTRITO || '',
@@ -871,19 +802,29 @@
                 return;
             }
 
-            let csv = 'Suministro,Tipo,ActividadOriginal,Medidor,Direccion,Distrito,Latitud,Longitud,Usuario\n';
-            selectedMarkers.forEach(p => {
-                csv += `"${p.SUMINISTRO || 'N/D'}","${p.tipoFiltro === 'VERENCAMPO' ? 'VER EN CAMPO' : (p.tipoFiltro || '—')}","${p.ACTIVIDAD || ''}","${p.MEDIDOR || 'SIN MEDIDOR'}","${p.DIRECCION || ''}","${p.DISTRITO || ''}",${p.LATITUD},${p.LONGITUD},"${p.USUARIO || '—'}"\n`;
-            });
-            
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'reporte_seleccionados.csv';
-            link.click();
+            const data = selectedMarkers.map(p => ({
+                ID: p.ID || 'N/D',
+                Tipo: p.tipoFiltro || '—',
+                Medidor: p.MEDIDOR || 'SIN MEDIDOR',
+                Direccion: p.DIRECCION || '',
+                Distrito: p.DISTRITO || '',
+                Latitud: p.LATITUD,
+                Longitud: p.LONGITUD,
+                Actividad: p.ACTIVIDAD || 'SIN DATO',
+                Usuario: p.Usuario || '—'
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Seleccionados");
+            XLSX.writeFile(wb, "reporte_seleccionados.xlsx");
         }
 
         function imprimirMapaNormal() {
+            if (loadedFiles.length === 0) {
+                alert("Primero carga un archivo Excel con puntos.");
+                return;
+            }
             window.print();
         }
 
@@ -954,6 +895,7 @@
         }
 
         let tamanoPaquete = 20;
+        var grupos = {};
 
         function prepararAgrupamiento() {
             const todosMarkers = getAllVisibleMarkers();
@@ -981,6 +923,7 @@
 
         function agruparPuntosReal() {
             const todosMarkers = getAllVisibleMarkers();
+
             const numGrupos = Math.ceil(todosMarkers.length / tamanoPaquete);
 
             const features = todosMarkers.map(m => {
@@ -988,6 +931,7 @@
             });
 
             const geojson = turf.featureCollection(features);
+
             const clustered = turf.clustersKmeans(geojson, { numberOfClusters: numGrupos });
 
             grupos = {};
@@ -996,14 +940,16 @@
                 const grupoId = feat.properties.cluster;
                 if (!grupos[grupoId]) grupos[grupoId] = [];
                 grupos[grupoId].push(todosMarkers[idx]);
+
                 todosMarkers[idx].properties.grupo = grupoId;
                 todosMarkers[idx].properties.colorGrupo = coloresGrupos[grupoId % coloresGrupos.length];
             });
 
             aplicarFiltros();
+
             mostrarSelectorGrupos(numGrupos);
 
-            alert(`Se crearon ${numGrupos} grupos de aproximadamente ${tamanoPaquete} puntos cada uno.`);
+            alert(`Se crearon ${numGrupos} grupos de aproximadamente ${tamanoPaquete} puntos cada uno.\nUsa el selector para ver uno específico.`);
         }
 
         function mostrarSelectorGrupos(numGrupos) {
@@ -1040,12 +986,14 @@
 
             const valor = select.value;
 
-            mainDataLayer.markers.forEach(m => {
-                if (valor === 'todos' || m.properties.grupo == valor) {
-                    m.setStyle({ fillOpacity: 0.85 });
-                } else {
-                    m.setStyle({ fillOpacity: 0.15 });
-                }
+            loadedFiles.forEach(file => {
+                file.markers.forEach(m => {
+                    if (valor === 'todos' || m.properties.grupo == valor) {
+                        m.setStyle({ fillOpacity: 0.85 });
+                    } else {
+                        m.setStyle({ fillOpacity: 0.15 });
+                    }
+                });
             });
 
             map.eachLayer(layer => {
@@ -1063,33 +1011,120 @@
 
             Object.keys(grupos).forEach(grupoId => {
                 const puntosGrupo = grupos[grupoId];
-                let csv = 'SUMINISTRO,LATITUD,LONGITUD,ACTIVIDAD,DISTRITO,DIRECCION,MEDIDOR,USUARIO,TIPO\n';
-                
-                puntosGrupo.forEach(m => {
-                    const p = m.properties;
-                    csv += `"${p.SUMINISTRO}",${p.LATITUD},${p.LONGITUD},"${p.ACTIVIDAD}","${p.DISTRITO}","${p.DIRECCION}","${p.MEDIDOR}","${p.USUARIO}","${p.tipoFiltro}"\n`;
-                });
-                
-                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                const link = document.createElement('a');
-                link.href = URL.createObjectURL(blob);
-                link.download = `grupo_${parseInt(grupoId) + 1}_${puntosGrupo.length}_puntos.csv`;
-                link.click();
+                const data = puntosGrupo.map(m => m.properties);
+
+                const ws = XLSX.utils.json_to_sheet(data);
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, `Grupo ${parseInt(grupoId) + 1}`);
+                XLSX.writeFile(wb, `grupo_${parseInt(grupoId) + 1}_${data.length}_puntos.xlsx`);
             });
 
-            alert("Todos los grupos han sido exportados como archivos CSV.");
+            alert("Todos los grupos han sido exportados como archivos Excel separados.");
         }
+
+        // ────────────────────────────────────────────────
+        // CARGA OBLIGATORIA DE data.json DESDE CARPETA LOCAL
+        // ────────────────────────────────────────────────
+
+        function cargarDataJsonLocal() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "data.json", true);
+            xhr.responseType = "json";
+
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    console.log("data.json cargado correctamente. Registros:", xhr.response.length);
+                    var json = xhr.response;
+                    if (json && json.length > 0) {
+                        const fileEntry = {
+                            filename: "data.json (carga local obligatoria)",
+                            data: json,
+                            markers: [],
+                            clusterGroup: L.markerClusterGroup({
+                                chunkedLoading: true,
+                                disableClusteringAtZoom: 16,
+                                maxClusterRadius: 50
+                            }),
+                            individualLayer: L.layerGroup(),
+                            visible: true
+                        };
+
+                        json.forEach(row => {
+                            if (!row.LATITUD || !row.LONGITUD) return;
+
+                            const actividadRaw = (row.ACTIVIDAD || '').toString().trim().toUpperCase();
+                            let tipo = 'PROYECTO';
+                            if (actividadRaw === 'A1') tipo = 'A1';
+                            else if (actividadRaw === 'A2') tipo = 'A2';
+                            else if (actividadRaw === 'A3') tipo = 'A3';
+                            else if (actividadRaw === 'IMPOSIBILIDAD') tipo = 'IMPOSIBILIDAD';
+
+                            const color = getColor(tipo);
+                            var marker = crearMarcador(row.LATITUD, row.LONGITUD, color);
+                            
+                            marker.properties = { ...row, tipoFiltro: tipo, color: color, filename: "data.json" };
+
+                            const popupContent = `
+                                <div style="min-width:220px; font-size:13px;">
+                                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                                        <strong>ID:</strong> ${row.ID || row.SUMINISTRO || 'N/D'}
+                                        <span id="toggle-${row.ID || row.SUMINISTRO || 'sinid'}" 
+                                              style="cursor:pointer; color:#3b82f6; font-size:16px; user-select:none;"
+                                              onclick="toggleDetails(this)"> ▶</span>
+                                    </div>
+                                    
+                                    <div id="details-${row.ID || row.SUMINISTRO || 'sinid'}" style="display:none; margin-top:8px; padding-top:8px; border-top:1px solid #eee;">
+                                        <strong>Actividad:</strong> ${row.ACTIVIDAD || '—'}<br>
+                                        <strong>Distrito:</strong> ${row.DISTRITO || '—'}<br>
+                                        <strong>Medidor:</strong> ${row.MEDIDOR || 'SIN MEDIDOR'}<br>
+                                        <strong>Dirección:</strong> ${row.DIRECCION || '—'}
+                                    </div>
+                                </div>
+                            `;
+
+                            marker.bindPopup(popupContent);
+
+                            marker.on('click', function(e) {
+                                if (modoClic) toggleSeleccionMarker(this);
+                                else map.openPopup(this.getPopup());
+                            });
+
+                            fileEntry.markers.push(marker);
+                            fileEntry.clusterGroup.addLayer(marker);
+                            fileEntry.individualLayer.addLayer(marker);
+                        });
+
+                        loadedFiles.push(fileEntry);
+                        actualizarDistritos();
+                        aplicarFiltros();
+                        console.log(`Puntos de data.json añadidos: ${fileEntry.markers.length} marcadores`);
+                        alert(`¡Cargados ${fileEntry.markers.length} puntos desde data.json (local)!`);
+                    } else {
+                        console.warn("data.json está vacío o no tiene registros válidos.");
+                        alert("data.json está vacío o no tiene datos válidos.");
+                    }
+                } else {
+                    console.error("No se encontró o no se pudo leer data.json. Código:", xhr.status);
+                    alert("No se pudo cargar data.json.\nVerifica:\n1. Que se llame exactamente 'data.json'\n2. Que esté en la misma carpeta que este HTML\n3. Prueba abrir en Firefox (más permisivo que Chrome)");
+                }
+            };
+
+            xhr.onerror = function () {
+                console.error("Error de red o archivo no accesible:", xhr.statusText);
+                alert("Error al intentar leer data.json.\nAsegúrate de que el archivo exista y prueba con Firefox o un servidor local simple.");
+            };
+
+            xhr.send();
+        }
+
+        // Ejecutar la carga al iniciar la página
+        window.addEventListener('load', function() {
+            cargarDataJsonLocal();
+        });
 
         map.on('zoomend', controlarVistaPorZoom);
         document.getElementById('distritoFilter').addEventListener('change', aplicarFiltros);
-        document.getElementById('search-box').addEventListener('input', function() {
-            clearTimeout(window.searchDebounce);
-            window.searchDebounce = setTimeout(aplicarFiltros, 400);
-        });
 
-        window.addEventListener('load', function() {
-            // El fetch ya se inicia automáticamente al cargar la página
-        });
     </script>
 </body>
 </html>

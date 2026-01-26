@@ -38,87 +38,86 @@
         .leaflet-sidebar-header {
             background: #1d4ed8;
             color: white;
-            padding: 1px;
-            font-size: 20px;
+            padding: 8px;
+            font-size: 16px;
             font-weight: 600;
             border-bottom: 1px solid #3b82f6;
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 8px;
         }
         
         .leaflet-sidebar-content {
-            padding: 24px 0px;
-        }
-        
-        h4 {
-            color: #1d4ed8;
-            font-size: 22px;
-            margin: 0 0 20px 0;
-            text-align: center;
-            font-weight: 600;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #bfdbfe;
+            padding: 12px 8px;
         }
         
         button {
             width: 100%;
-            height: 30px;
-            font-size: 15px;
+            height: 18px;                    /* reducido a la mitad */
+            font-size: 11px;                 /* fuente más pequeña */
             font-weight: 600;
-            margin: 10px 0;
-            padding: 0 16px;
-            border-radius: 8px;
+            margin: 4px 0;                   /* menos espacio entre botones */
+            padding: 0 8px;
+            border-radius: 6px;
             border: none;
             background: #3b82f6;
             color: white;
             cursor: pointer;
-            transition: all 0.25s;
+            transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            box-shadow: 0 2px 8px rgba(59,130,246,0.25);
+            gap: 6px;
+            box-shadow: 0 1px 4px rgba(59,130,246,0.25);
+        }
+        
+        button i {
+            font-size: 12px;                 /* iconos más pequeños */
         }
         
         button:hover {
             background: #2563eb;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(59,130,246,0.35);
+            transform: translateY(-1px);
+            box-shadow: 0 3px 8px rgba(59,130,246,0.35);
         }
         
-        button[onclick="imprimirMapaNormal()"] {
-            background: #16a34a !important;
-            font-size: 16px;
+        button:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
         
-        button[onclick="imprimirMapaNormal()"]:hover {
-            background: #15803d !important;
+        button.danger {
+            background: #ef4444 !important;
+        }
+        
+        button.danger:hover:not(:disabled) {
+            background: #dc2626 !important;
         }
 
-        #export-buttons button {
-            background: #64748b;
-            height: 30px;
-        }
-        
-        #export-buttons button:hover {
-            background: #475569;
+        /* Botón activo en azul metálico */
+        button.active {
+            background: linear-gradient(135deg, #1e88e5, #1565c0) !important;
+            box-shadow: 0 4px 12px rgba(30, 136, 229, 0.5) !important;
+            transform: translateY(0) !important;
+            border: 1px solid #0d47a1;
         }
 
         select, input[type="text"], input[type="file"] {
             width: 100%;
-            padding: 14px 16px;
-            font-size: 15px;
+            padding: 8px 10px;
+            font-size: 12px;
             border: 1px solid #93c5fd;
-            border-radius: 8px;
-            margin: 10px 0;
+            border-radius: 6px;
+            margin: 6px 0;
             background: white;
         }
         
         select:focus, input:focus {
             border-color: #3b82f6;
             outline: none;
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+            box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
         }
 
         #leyenda {
@@ -126,55 +125,44 @@
             bottom: 20px;
             right: 20px;
             background: white;
-            padding: 14px 18px;
-            border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
-            font-size: 13px;
+            padding: 10px 14px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+            font-size: 12px;
             border: 1px solid #e5e7eb;
             z-index: 1000;
         }
         
-        .leyenda-item { display: flex; align-items: center; margin: 6px 0; }
-        .leyenda-color { width: 16px; height: 16px; border-radius: 50%; margin-right: 10px; border: 1px solid #666; }
+        .leyenda-item { display: flex; align-items: center; margin: 4px 0; }
+        .leyenda-color { width: 14px; height: 14px; border-radius: 50%; margin-right: 8px; border: 1px solid #666; }
         
         .legend-toggle {
             position: absolute;
-            bottom: 100px;
+            bottom: 90px;
             right: 30px;
             z-index: 1001;
             background: white;
             border: 2px solid #4682b4;
             border-radius: 50%;
-            width: 44px;
-            height: 44px;
+            width: 36px;
+            height: 36px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 3px 10px rgba(0,0,0,0.25);
-            font-size: 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            font-size: 16px;
             color: #4682b4;
-            transition: all 0.25s;
         }
         
         .legend-toggle:hover {
             background: #4682b4;
             color: white;
             transform: scale(1.08);
-            box-shadow: 0 5px 15px rgba(70,130,180,0.4);
         }
         
         #leyenda.hidden { display: none !important; }
         
-        .location-control-active { background-color: #a5d8ff !important; }
-        .location-control-active i { animation: pulse 2s infinite; }
-        
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.25); }
-            100% { transform: scale(1); }
-        }
-
         .modal { 
             display: none; 
             position: fixed; 
@@ -187,33 +175,59 @@
         }
         .modal-content { 
             background: white; 
-            color: #1f2937; 
-            padding: 24px; 
-            border-radius: 12px; 
-            width: 380px; 
-            max-height: 90vh; 
-            overflow-y: auto; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.25); 
+            padding: 16px; 
+            border-radius: 10px; 
+            width: 90%;
+            max-width: 400px;
+            max-height: 85vh;
+            overflow-y: auto;
         }
-        .close { float: right; font-size: 28px; cursor: pointer; color: #666; }
+        .close { float: right; font-size: 24px; cursor: pointer; color: #666; }
 
-        @media print {
-            #leyenda, .leaflet-control-container, .leaflet-sidebar, .legend-toggle { display: none !important; }
-            #map { height: 100vh !important; }
-            body::before { 
-                content: "Mapa de Conexiones de Agua Potable - Región La Libertad"; 
-                display: block; 
-                text-align: center; 
-                font-size: 26px; 
-                font-weight: bold; 
-                color: #1d4ed8; 
-                margin: 30px 0 20px; 
-            }
+        #detallePunto {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 180px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+            padding: 12px;
+            z-index: 1000;
+            display: none;
+            max-height: 70vh;
+            overflow-y: auto;
+            border: 1px solid #bfdbfe;
+            font-size: 12px;
+        }
+
+        #detallePunto h3 {
+            margin: 0 0 10px 0;
+            color: #1d4ed8;
+            font-size: 16px;
+            text-align: center;
+        }
+
+        #detallePunto .dato {
+            margin: 6px 0;
+            line-height: 1.3;
+        }
+
+        #detallePunto .label {
+            font-weight: bold;
+            color: #1d4ed8;
+            display: inline-block;
+            width: 90px;
         }
     </style>
 </head>
 <body data-print-date="">
     <div id="map"></div>
+
+    <div id="detallePunto">
+        <h3 id="tituloSuministro">SUMINISTRO</h3>
+        <div id="contenidoDetalle"></div>
+    </div>
 
     <div id="sidebar" class="leaflet-sidebar collapsed">
         <div class="leaflet-sidebar-tabs">
@@ -225,44 +239,43 @@
         <div class="leaflet-sidebar-content">
             <div class="leaflet-sidebar-pane active" id="home">
                 <h1 class="leaflet-sidebar-header">
-                    <i class="fa fa-tint"></i> Conexiones Agua Potable
+                    <i class="fa fa-tint"></i> Agua Potable
                     <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
                 </h1>
                 
                 <input type="file" id="excelFile" accept=".xlsx" multiple />
                 
+                <button id="btn-matriz" style="background:#7c3aed; color:white; margin:6px 0;">
+                    <i class="fa fa-database"></i> Matriz
+                </button>
+                
                 <select id="distritoFilter">
-                    <option value="">Selecciona distrito</option>
+                    <option value="">Distrito</option>
                 </select>
                 
-                <button onclick="verConteo()"><i class="fa fa-chart-pie"></i> Ver Conteo General</button>
-                <button onclick="verReportePorLocalidad()"><i class="fa fa-table"></i> Reporte por Localidad</button>
-                <button onclick="abrirFiltroVisibilidad()"><i class="fa fa-filter"></i> Filtrar Visibilidad</button>
-                <button onclick="abrirArchivosModal()"><i class="fa fa-folder"></i> Gestionar Archivos</button>
-                <button id="btnSeleccionar" onclick="toggleModoClic()"><i class="fa fa-hand-pointer"></i> SELECCIONAR PUNTOS</button>
-                <button onclick="limpiarSeleccion()"><i class="fa fa-eraser"></i> Limpiar Selección</button>
+                <button onclick="abrirGestionArchivos()"><i class="fa fa-folder"></i> Archivos</button>
                 
-                <button onclick="prepararAgrupamiento()">
-                    <i class="fa fa-object-group"></i> Agrupar Puntos
-                </button>
-                
-                <button onclick="imprimirMapaNormal()">
-                    <i class="fa fa-print"></i> IMPRIMIR MAPA
-                </button>
-                
-                <hr style="border-color:#bfdbfe; margin:20px 0;">
-                
-                <input type="text" id="search-box" placeholder="Buscar ID / Dir / Medidor">
-                
-                <hr style="border-color:#bfdbfe; margin:20px 0;">
-                
-                <div id="export-buttons">
-                    <button onclick="exportarSeleccionPDF()"><i class="fa fa-file-pdf"></i> PDF</button>
-                    <button onclick="exportarSeleccionExcel()"><i class="fa fa-file-excel"></i> EXCEL</button>
+                <div style="margin-top:10px;">
+                    <button id="btnConteo" disabled onclick="ejecutarConteo()"><i class="fa fa-chart-pie"></i> Conteo</button>
+                    <button id="btnReporte" disabled onclick="ejecutarReporte()"><i class="fa fa-table"></i> Reporte</button>
+                    <button id="btnFiltro" onclick="abrirFiltroVisibilidad()"><i class="fa fa-filter"></i> Filtro</button>
                 </div>
-                <small style="color:#64748b; display:block; text-align:center; margin-top:10px;">
-                    Exporta la selección actual
-                </small>
+                
+                <button id="btnSeleccionar" onclick="toggleModoClic()"><i class="fa fa-hand-pointer"></i> Seleccionar</button>
+                <button onclick="limpiarSeleccion()"><i class="fa fa-eraser"></i> Limpiar</button>
+                
+                <button onclick="prepararAgrupamiento()"><i class="fa fa-object-group"></i> Agrupar</button>
+                
+                <button onclick="imprimirMapaNormal()"><i class="fa fa-print"></i> Imprimir</button>
+                
+                <hr style="margin:10px 0;">
+                
+                <input type="text" id="search-box" placeholder="SUMINISTRO">
+                
+                <div id="export-buttons" style="margin-top:10px;">
+                    <button onclick="exportarSeleccionPDF()"><i class="fa fa-file-pdf"></i> PDF</button>
+                    <button onclick="exportarSeleccionExcel()"><i class="fa fa-file-excel"></i> XLS</button>
+                </div>
             </div>
         </div>
     </div>
@@ -272,8 +285,9 @@
         <div class="leyenda-item"><div class="leyenda-color" style="background:#d32f2f;"></div>A1</div>
         <div class="leyenda-item"><div class="leyenda-color" style="background:#ffeb3b;"></div>A2</div>
         <div class="leyenda-item"><div class="leyenda-color" style="background:#4caf50;"></div>A3</div>
-        <div class="leyenda-item"><div class="leyenda-color" style="background:#212121;"></div>Imposibilidad</div>
-        <div class="leyenda-item"><div class="leyenda-color" style="background:#4682b4;"></div>Proyecto Total</div>
+        <div class="leyenda-item"><div class="leyenda-color" style="background:#212121;"></div>Imp</div>
+        <div class="leyenda-item"><div class="leyenda-color" style="background:#4682b4;"></div>Proy</div>
+        <div class="leyenda-item"><div class="leyenda-color" style="background:#ff9800;"></div>Campo</div>
     </div>
 
     <div class="legend-toggle" id="toggleLeyenda" title="Mostrar/Ocultar leyenda">
@@ -283,25 +297,33 @@
     <div id="conteoModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="cerrarModal('conteoModal')">×</span>
-            <h4>Conteo General</h4>
+            <h4>Conteo</h4>
             <div>A1: <span id="modalCountA1">0</span></div>
             <div>A2: <span id="modalCountA2">0</span></div>
             <div>A3: <span id="modalCountA3">0</span></div>
-            <div>Imposibilidad: <span id="modalCountIMP">0</span></div>
-            <div>Proyecto Total: <span id="modalCountPROY">0</span></div>
+            <div>Imp: <span id="modalCountIMP">0</span></div>
+            <div>Proy: <span id="modalCountPROY">0</span></div>
+            <div>Campo: <span id="modalCountVERCAMPO">0</span></div>
             <hr>
-            <div>Total cargados: <span id="modalCountTotal">0</span></div>
-            <div>Selección actual: <span id="modalSelectionCount">0</span> puntos</div>
+            <div>Total: <span id="modalCountTotal">0</span></div>
         </div>
     </div>
 
     <div id="reporteModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="cerrarModal('reporteModal')">×</span>
-            <h4>Reporte por Localidad</h4>
-            <div id="reporteContenido">Carga un archivo para ver el reporte.</div>
-            <button onclick="exportarReporteLocalidadExcel()" style="margin-top:15px; background:#f59e0b; color:white; display:none;" id="btnExportReporte">
-                Exportar a Excel
+            <h4>Reporte</h4>
+            <div id="reporteContenido"></div>
+        </div>
+    </div>
+
+    <div id="gestionArchivosModal" class="modal">
+        <div class="modal-content" style="width:420px;">
+            <span class="close" onclick="cerrarModal('gestionArchivosModal')">×</span>
+            <h4>Archivos</h4>
+            <div id="gestionFilesList" style="margin: 10px 0; max-height:300px; overflow-y:auto;"></div>
+            <button onclick="aplicarGestionArchivos()" style="margin-top:10px; background:#16a34a; color:white; padding:8px; width:100%;">
+                Aplicar
             </button>
         </div>
     </div>
@@ -309,26 +331,16 @@
     <div id="filtroModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="cerrarModal('filtroModal')">×</span>
-            <h4>Filtrar Visibilidad</h4>
-            <div style="text-align: left; margin: 15px 0;">
-                <label><input type="checkbox" id="visA1" checked> A1 (Rojo)</label><br>
-                <label><input type="checkbox" id="visA2" checked> A2 (Amarillo)</label><br>
-                <label><input type="checkbox" id="visA3" checked> A3 (Verde)</label><br>
-                <label><input type="checkbox" id="visIMP" checked> Imposibilidad (Negro)</label><br>
-                <label><input type="checkbox" id="visProyecto" checked> Proyecto Total (Azul)</label>
+            <h4>Filtro</h4>
+            <div style="text-align: left; margin: 10px 0; font-size:12px;">
+                <label><input type="checkbox" id="visA1" checked> A1</label><br>
+                <label><input type="checkbox" id="visA2" checked> A2</label><br>
+                <label><input type="checkbox" id="visA3" checked> A3</label><br>
+                <label><input type="checkbox" id="visIMP" checked> Imp</label><br>
+                <label><input type="checkbox" id="visProyecto" checked> Proy</label><br>
+                <label><input type="checkbox" id="visVERENCAMPO" checked> Campo</label>
             </div>
-            <button onclick="aplicarFiltroVisibilidad()" style="margin-top:20px; background:#1d4ed8; color:white; padding:12px; width:100%;">
-                Aplicar
-            </button>
-        </div>
-    </div>
-
-    <div id="filesModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="cerrarModal('filesModal')">×</span>
-            <h4>Archivos Cargados</h4>
-            <div id="filesList" style="text-align: left; margin: 15px 0;"></div>
-            <button onclick="aplicarVisibilidadArchivos()" style="margin-top:20px; background:#1d4ed8; color:white; padding:12px; width:100%;">
+            <button onclick="aplicarFiltroVisibilidad()" style="margin-top:10px; background:#1d4ed8; color:white; padding:8px; width:100%;">
                 Aplicar
             </button>
         </div>
@@ -355,7 +367,6 @@
         var loadedFiles = [];
         var selectedMarkers = [];
         var modoClic = false;
-        var reporteData = [];
 
         var locationWatcher = null;
         var locationMarker = null;
@@ -368,7 +379,8 @@
             A2: true,
             A3: true,
             IMPOSIBILIDAD: true,
-            PROYECTO: true
+            PROYECTO: true,
+            VERENCAMPO: true
         };
 
         var sidebar = L.control.sidebar({
@@ -378,13 +390,15 @@
             autopan: false
         }).addTo(map);
 
-        const coloresGrupos = [
-            '#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', 
-            '#00ffff', '#ffa500', '#a52a2a', '#808000', '#800080',
-            '#ff69b4', '#4b0082', '#20b2aa', '#8b4513', '#32cd32'
-        ];
+        function normalizarSuministro(s) {
+            if (!s) return '';
+            return s.toString().trim().replace(/\s+/g, ' ').toUpperCase();
+        }
 
-        var grupos = {};
+        function tienePalabraCampo(texto) {
+            if (!texto) return false;
+            return texto.toString().toLowerCase().includes('campo');
+        }
 
         function getColor(tipo) {
             switch(tipo) {
@@ -393,6 +407,7 @@
                 case 'A3': return '#4caf50';
                 case 'IMPOSIBILIDAD': return '#212121';
                 case 'PROYECTO': return '#4682b4';
+                case 'VERENCAMPO': return '#ff9800';
                 default: return '#888888';
             }
         }
@@ -408,150 +423,185 @@
             });
         }
 
-        L.Control.UbicacionButton = L.Control.extend({
-            options: { position: 'topright' },
-            onAdd: function(map) {
-                const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
-                this.button = L.DomUtil.create('a', '', container);
-                this.button.href = '#';
-                this.button.title = 'Mi ubicación en tiempo real';
-                this.button.innerHTML = '<i class="fa fa-location-arrow" style="font-size:18px; line-height:26px;"></i>';
-                this.button.style.width = '34px';
-                this.button.style.height = '34px';
-                this.button.style.display = 'block';
-                this.button.style.textAlign = 'center';
-                this.button.style.backgroundColor = '#ffffff';
-                this.button.style.borderBottom = '1px solid #ccc';
-
-                L.DomEvent
-                    .on(this.button, 'mousedown', L.DomEvent.stopPropagation)
-                    .on(this.button, 'click', L.DomEvent.preventDefault)
-                    .on(this.button, 'click', () => {
-                        toggleLocation();
-                        this.updateActiveState();
-                    });
-
-                this.updateActiveState();
-                return container;
-            },
-            updateActiveState: function() {
-                this.button.parentElement.classList.toggle('location-control-active', isLocationActive);
-            }
-        });
-
-        const ubicacionControl = new L.Control.UbicacionButton();
-        ubicacionControl.addTo(map);
-
-        document.getElementById('toggleLeyenda').addEventListener('click', function() {
-            const leyenda = document.getElementById('leyenda');
-            const icon = this.querySelector('i');
-            leyenda.classList.toggle('hidden');
-            icon.classList.toggle('fa-eye');
-            icon.classList.toggle('fa-eye-slash');
-            this.title = leyenda.classList.contains('hidden') ? "Mostrar leyenda" : "Ocultar leyenda";
+        document.getElementById('btn-matriz').addEventListener('click', function() {
+            document.getElementById('excelFile').click();
         });
 
         document.getElementById('excelFile').addEventListener('change', function(e) {
             const files = e.target.files;
             if (files.length === 0) return;
+
+            let conUbicacionPropia = 0;
+            let ubicadosPorMatriz = 0;
+            let noUbicados = 0;
+
             Array.from(files).forEach(file => {
                 var reader = new FileReader();
                 reader.onload = function(e) {
                     var data = new Uint8Array(e.target.result);
                     var workbook = XLSX.read(data, {type: 'array'});
                     var sheet = workbook.Sheets[workbook.SheetNames[0]];
-                    var json = XLSX.utils.sheet_to_json(sheet);
-                    procesarDatos(file.name, json);
+                    var json = XLSX.utils.sheet_to_json(sheet, {defval: ""});
+
+                    const fileEntry = {
+                        filename: file.name,
+                        data: json,
+                        markers: [],
+                        clusterGroup: L.markerClusterGroup({
+                            chunkedLoading: true,
+                            disableClusteringAtZoom: 16,
+                            maxClusterRadius: 50
+                        }),
+                        individualLayer: L.layerGroup(),
+                        visible: true,
+                        selectedForAnalysis: true
+                    };
+
+                    json.forEach(row => {
+                        let lat = parseFloat(row.LATITUD || row.LAT || row.Latitud);
+                        let lng = parseFloat(row.LONGITUD || row.LON || row.Longitud);
+
+                        if (isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0) {
+                            let suministro = normalizarSuministro(row.SUMINISTRO || row['SUMINISTRO'] || row['N° SUMINISTRO'] || row['COD SUMINISTRO']);
+                            if (suministro && matrizUbicaciones.has(suministro)) {
+                                const info = matrizUbicaciones.get(suministro);
+                                lat = info.lat;
+                                lng = info.lng;
+                                ubicadosPorMatriz++;
+                            } else {
+                                noUbicados++;
+                                return;
+                            }
+                        } else {
+                            conUbicacionPropia++;
+                            let suministro = normalizarSuministro(row.SUMINISTRO || row['SUMINISTRO']);
+                            if (suministro) {
+                                matrizUbicaciones.set(suministro, {lat, lng});
+                            }
+                        }
+
+                        const textoCampo = [
+                            row['VER EN CAMPO'],
+                            row['VER_EN_CAMPO'],
+                            row['VERENCAMPO'],
+                            row.ACTIVIDAD,
+                            row.OBSERVACION,
+                            row.NOTAS
+                        ].filter(Boolean).join(' ').toLowerCase();
+
+                        const esVerEnCampo = tienePalabraCampo(textoCampo);
+
+                        const actividadRaw = (row.ACTIVIDAD || '').toString().trim().toUpperCase();
+                        let tipo = 'PROYECTO';
+                        
+                        if (esVerEnCampo) {
+                            tipo = 'VERENCAMPO';
+                        } else if (actividadRaw === 'A1') {
+                            tipo = 'A1';
+                        } else if (actividadRaw === 'A2') {
+                            tipo = 'A2';
+                        } else if (actividadRaw === 'A3') {
+                            tipo = 'A3';
+                        } else if (actividadRaw === 'IMPOSIBILIDAD') {
+                            tipo = 'IMPOSIBILIDAD';
+                        }
+
+                        const color = getColor(tipo);
+                        var marker = crearMarcador(lat, lng, color);
+                        
+                        marker.properties = { ...row, tipoFiltro: tipo, color: color, filename: file.name };
+
+                        const suministroMostrar = row.SUMINISTRO || row['SUMINISTRO'] || row['N° SUMINISTRO'] || row['COD SUMINISTRO'] || 'SIN SUMINISTRO';
+
+                        const popupSimple = `
+                            <div style="text-align:center; padding:4px;">
+                                <div style="width: 32px; height: 32px; background: #d32f2f; border: 3px solid white; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.4); margin: 0 auto;"></div>
+                            </div>
+                        `;
+
+                        marker.bindPopup(popupSimple, { maxWidth: 60, closeButton: false });
+
+                        marker.on('click', function(e) {
+                            if (modoClic) {
+                                toggleSeleccionMarker(this);
+                            } else {
+                                mostrarDetallePunto(this.properties);
+                                map.openPopup(this.getPopup());
+                            }
+                        });
+
+                        fileEntry.markers.push(marker);
+                        fileEntry.clusterGroup.addLayer(marker);
+                        fileEntry.individualLayer.addLayer(marker);
+                    });
+
+                    loadedFiles.push(fileEntry);
+                    actualizarDistritos();
+                    aplicarFiltros();
+                    actualizarBotonesAnalisis();
+
+                    alert(`¡Listo! Cargados ${fileEntry.markers.length} puntos del archivo ${file.name}.\n` +
+                          `Con ubicación propia: ${conUbicacionPropia}\n` +
+                          `Ubicados con matriz: ${ubicadosPorMatriz}\n` +
+                          `Sin ubicación encontrada: ${noUbicados}`);
                 };
                 reader.readAsArrayBuffer(file);
             });
             e.target.value = '';
         });
 
-        function procesarDatos(filename, data) {
-            const fileEntry = {
-                filename,
-                data,
-                markers: [],
-                clusterGroup: L.markerClusterGroup({
-                    chunkedLoading: true,
-                    disableClusteringAtZoom: 16,
-                    maxClusterRadius: 50
-                }),
-                individualLayer: L.layerGroup(),
-                visible: true
-            };
+        function mostrarDetallePunto(props) {
+            const suministro = props.SUMINISTRO || props['SUMINISTRO'] || props['N° SUMINISTRO'] || props['COD SUMINISTRO'] || 'SIN SUMINISTRO';
+            const medidor = props.MEDIDOR || 'SIN MEDIDOR';
+            const actividad = props.ACTIVIDAD || 'SIN DATO';
+            const usuario = props.Usuario || '—';
+            const direccion = props.DIRECCION || '—';
+            const distrito = props.DISTRITO || '—';
+            const verCampo = tienePalabraCampo([
+                props['VER EN CAMPO'],
+                props['VER_EN_CAMPO'],
+                props['VERENCAMPO'],
+                props.ACTIVIDAD,
+                props.OBSERVACION,
+                props.NOTAS
+            ].join(' ')) ? 'SÍ' : 'NO';
 
-            data.forEach(row => {
-                if (!row.LATITUD || !row.LONGITUD) return;
+            document.getElementById('tituloSuministro').textContent = suministro;
+            document.getElementById('contenidoDetalle').innerHTML = `
+                <div class="dato"><span class="label">Medidor:</span> ${medidor}</div>
+                <div class="dato"><span class="label">Actividad:</span> ${actividad}</div>
+                <div class="dato"><span class="label">Usuario:</span> ${usuario}</div>
+                <div class="dato"><span class="label">Dirección:</span> ${direccion}</div>
+                <div class="dato"><span class="label">Distrito:</span> ${distrito}</div>
+                <div class="dato"><span class="label">Ver Campo:</span> ${verCampo}</div>
+            `;
 
-                const actividadRaw = (row.ACTIVIDAD || '').toString().trim().toUpperCase();
-                let tipo = 'PROYECTO';
-                if (actividadRaw === 'A1') tipo = 'A1';
-                else if (actividadRaw === 'A2') tipo = 'A2';
-                else if (actividadRaw === 'A3') tipo = 'A3';
-                else if (actividadRaw === 'IMPOSIBILIDAD') tipo = 'IMPOSIBILIDAD';
-
-                const color = getColor(tipo);
-                var marker = crearMarcador(row.LATITUD, row.LONGITUD, color);
-                
-                marker.properties = { ...row, tipoFiltro: tipo, color: color, filename: filename };
-
-                const datosOcultos = [
-                    { label: "Medidor",   value: row.MEDIDOR   || 'SIN MEDIDOR' },
-                    { label: "Actividad", value: row.ACTIVIDAD || 'SIN DATO'    },
-                    { label: "Usuario",   value: row.Usuario   || '—'           },
-                    { label: "Dirección", value: row.DIRECCION || '—'           },
-                    { label: "Distrito",  value: row.DISTRITO  || '—'           }
-                ].filter(item => item.value !== '—');
-
-                const popupContent = `
-                    <div style="min-width:220px; font-size:13px;">
-                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-                            <strong>ID:</strong> ${row.ID || 'N/D'}
-                            <span id="toggle-${row.ID || 'sinid'}" 
-                                  style="cursor:pointer; color:#3b82f6; font-size:16px; user-select:none;"
-                                  onclick="toggleDetails(this)"> ▶</span>
-                        </div>
-                        
-                        <div id="details-${row.ID || 'sinid'}" style="display:none; margin-top:8px; padding-top:8px; border-top:1px solid #eee;">
-                            ${datosOcultos.map(item => `
-                                <div style="margin:4px 0;">
-                                    <strong>${item.label}:</strong> ${item.value}
-                                </div>
-                            `).join('')}
-                        </div>
-                    </div>
-                `;
-
-                marker.bindPopup(popupContent, { maxWidth: 320 });
-
-                marker.on('click', function(e) {
-                    if (modoClic) toggleSeleccionMarker(this);
-                    else map.openPopup(this.getPopup());
-                });
-
-                fileEntry.markers.push(marker);
-                fileEntry.clusterGroup.addLayer(marker);
-                fileEntry.individualLayer.addLayer(marker);
-            });
-
-            loadedFiles.push(fileEntry);
-            actualizarDistritos();
-            aplicarFiltros();
-            alert(`¡Listo! Cargados ${fileEntry.markers.length} puntos del archivo ${filename}.`);
+            document.getElementById('detallePunto').style.display = 'block';
         }
 
-        function toggleDetails(element) {
-            const id = element.id.replace('toggle-', '');
-            const details = document.getElementById(`details-${id}`);
-            if (details.style.display === 'none' || details.style.display === '') {
-                details.style.display = 'block';
-                element.textContent = ' ▼';
+        function limpiarDetallePunto() {
+            document.getElementById('detallePunto').style.display = 'none';
+        }
+
+        function toggleModoClic() {
+            modoClic = !modoClic;
+            const btn = document.getElementById('btnSeleccionar');
+            if (modoClic) {
+                btn.classList.add('active');
+                map.getContainer().style.cursor = 'crosshair';
+                alert("Modo selección activado.");
             } else {
-                details.style.display = 'none';
-                element.textContent = ' ▶';
+                btn.classList.remove('active');
+                map.getContainer().style.cursor = 'grab';
+                limpiarDetallePunto();
             }
+            aplicarFiltros();
+        }
+
+        function limpiarSeleccion() {
+            selectedMarkers = [];
+            limpiarDetallePunto();
+            aplicarFiltros();
         }
 
         function actualizarDistritos() {
@@ -563,7 +613,7 @@
             });
             const distritos = [...allDistritos].sort();
             const selectDist = document.getElementById('distritoFilter');
-            selectDist.innerHTML = '<option value="">Selecciona distrito</option><option value="TODOS">TODOS DISTRITOS</option>';
+            selectDist.innerHTML = '<option value="">Selecciona distrito</option><option value="TODOS">TODOS</option>';
             distritos.forEach(d => {
                 let opt = document.createElement('option');
                 opt.value = d; opt.text = d;
@@ -579,9 +629,19 @@
             return markers;
         }
 
+        function getSelectedVisibleMarkers() {
+            let markers = [];
+            loadedFiles.forEach(file => {
+                if (file.visible && file.selectedForAnalysis) {
+                    markers = markers.concat(file.markers);
+                }
+            });
+            return markers;
+        }
+
         function actualizarConteos() {
-            const markers = getAllVisibleMarkers();
-            const c = { A1:0, A2:0, A3:0, IMPOSIBILIDAD:0, PROYECTO:0, total: markers.length };
+            const markers = getSelectedVisibleMarkers();
+            const c = { A1:0, A2:0, A3:0, IMPOSIBILIDAD:0, PROYECTO:0, VERENCAMPO:0, total: markers.length };
             markers.forEach(m => {
                 if (c.hasOwnProperty(m.properties.tipoFiltro)) c[m.properties.tipoFiltro]++;
             });
@@ -590,13 +650,198 @@
             document.getElementById('modalCountA3').textContent = c.A3;
             document.getElementById('modalCountIMP').textContent = c.IMPOSIBILIDAD;
             document.getElementById('modalCountPROY').textContent = c.PROYECTO;
+            document.getElementById('modalCountVERCAMPO').textContent = c.VERENCAMPO;
             document.getElementById('modalCountTotal').textContent = c.total;
             document.getElementById('modalSelectionCount').textContent = selectedMarkers.length;
         }
 
-        function verConteo() {
+        function actualizarBotonesAnalisis() {
+            const tieneArchivosSeleccionados = loadedFiles.some(f => f.visible && f.selectedForAnalysis);
+            document.getElementById('btnConteo').disabled = !tieneArchivosSeleccionados;
+            document.getElementById('btnReporte').disabled = !tieneArchivosSeleccionados;
+        }
+
+        function abrirGestionArchivos() {
+            if (loadedFiles.length === 0) return alert('No hay archivos cargados.');
+
+            let html = '';
+            loadedFiles.forEach((file, index) => {
+                const visChecked = file.visible ? 'checked' : '';
+                html += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:8px; background:#f1f5f9; margin:6px 0; border-radius:6px; border:1px solid #e2e8f0; font-size:12px;">
+                        <div style="flex:1;">
+                            <strong>${file.filename}</strong><br>
+                            <small>${file.markers.length} pts</small>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <label title="Visible / Analizar">
+                                <input type="checkbox" class="file-vis" data-index="${index}" ${visChecked}>
+                            </label>
+                            <button class="danger" style="width:auto; height:20px; padding:0 6px; font-size:10px;" 
+                                    onclick="eliminarArchivo(${index})">X</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('gestionFilesList').innerHTML = html;
+            document.getElementById('gestionArchivosModal').style.display = 'flex';
+        }
+
+        function eliminarArchivo(index) {
+            if (!confirm(`¿Eliminar "${loadedFiles[index].filename}"?`)) return;
+
+            const file = loadedFiles[index];
+            if (map.hasLayer(file.clusterGroup)) map.removeLayer(file.clusterGroup);
+            if (map.hasLayer(file.individualLayer)) map.removeLayer(file.individualLayer);
+
+            loadedFiles.splice(index, 1);
+            actualizarDistritos();
+            aplicarFiltros();
+            actualizarBotonesAnalisis();
+            abrirGestionArchivos();
+        }
+
+        function aplicarGestionArchivos() {
+            document.querySelectorAll('.file-vis').forEach(cb => {
+                const idx = parseInt(cb.dataset.index);
+                loadedFiles[idx].visible = cb.checked;
+                loadedFiles[idx].selectedForAnalysis = cb.checked;
+            });
+
+            aplicarFiltros();
+            actualizarBotonesAnalisis();
+            cerrarModal('gestionArchivosModal');
+        }
+
+        function ejecutarConteo() {
             actualizarConteos();
             document.getElementById('conteoModal').style.display = 'flex';
+        }
+
+        function ejecutarReporte() {
+            const datos = [];
+            loadedFiles.forEach(file => {
+                if (file.visible && file.selectedForAnalysis) {
+                    datos.push(...file.data);
+                }
+            });
+
+            if (datos.length === 0) {
+                alert('No hay archivos seleccionados.');
+                return;
+            }
+
+            const porDistrito = {};
+            const totales = { A1:0, A2:0, A3:0, IMPOSIBILIDAD:0, PROYECTO:0, VERENCAMPO:0, total:0 };
+
+            datos.forEach(row => {
+                const distrito = row.DISTRITO || 'SIN DISTRITO';
+                if (!porDistrito[distrito]) porDistrito[distrito] = { A1:0, A2:0, A3:0, IMPOSIBILIDAD:0, PROYECTO:0, VERENCAMPO:0, total:0 };
+
+                const textoCampo = [
+                    row['VER EN CAMPO'],
+                    row['VER_EN_CAMPO'],
+                    row['VERENCAMPO'],
+                    row.ACTIVIDAD,
+                    row.OBSERVACION
+                ].filter(Boolean).join(' ').toLowerCase();
+
+                const esVerEnCampo = tienePalabraCampo(textoCampo);
+
+                let tipo = 'PROYECTO';
+                const act = (row.ACTIVIDAD || '').toString().trim().toUpperCase();
+                
+                if (esVerEnCampo) {
+                    tipo = 'VERENCAMPO';
+                } else if (act === 'A1') {
+                    tipo = 'A1';
+                } else if (act === 'A2') {
+                    tipo = 'A2';
+                } else if (act === 'A3') {
+                    tipo = 'A3';
+                } else if (act === 'IMPOSIBILIDAD') {
+                    tipo = 'IMPOSIBILIDAD';
+                }
+
+                porDistrito[distrito][tipo]++;
+                porDistrito[distrito].total++;
+                totales[tipo]++;
+                totales.total++;
+            });
+
+            let html = '<table style="width:100%; border-collapse:collapse; font-size:12px;"><tr><th>Distrito</th><th>A1</th><th>A2</th><th>A3</th><th>Imp</th><th>Proy</th><th>Campo</th><th>Total</th></tr>';
+            Object.keys(porDistrito).sort().forEach(dist => {
+                const d = porDistrito[dist];
+                html += `<tr><td>${dist}</td><td>${d.A1}</td><td>${d.A2}</td><td>${d.A3}</td><td>${d.IMPOSIBILIDAD}</td><td>${d.PROYECTO}</td><td>${d.VERENCAMPO}</td><td>${d.total}</td></tr>`;
+            });
+            html += `<tr style="font-weight:bold; background:#f0f0f0;"><td>TOTAL</td><td>${totales.A1}</td><td>${totales.A2}</td><td>${totales.A3}</td><td>${totales.IMPOSIBILIDAD}</td><td>${totales.PROYECTO}</td><td>${totales.VERENCAMPO}</td><td>${totales.total}</td></tr></table>`;
+
+            document.getElementById('reporteContenido').innerHTML = html;
+            document.getElementById('reporteModal').style.display = 'flex';
+        }
+
+        function exportarSeleccionPDF() {
+            if (selectedMarkers.length === 0) {
+                alert("No hay puntos seleccionados.");
+                return;
+            }
+
+            const doc = new jsPDF('p', 'mm', 'a4');
+            doc.setFontSize(14);
+            doc.text("Puntos Seleccionados", 20, 20);
+            doc.setFontSize(10);
+            doc.text(`Total: ${selectedMarkers.length} | ${new Date().toLocaleDateString('es-PE')}`, 20, 28);
+
+            const headers = [["N°", "SUMINISTRO", "Tipo", "Medidor", "Dirección", "Distrito"]];
+            const data = selectedMarkers.map((p, i) => [
+                i + 1,
+                p.SUMINISTRO || p['SUMINISTRO'] || p['N° SUMINISTRO'] || p['COD SUMINISTRO'] || 'SIN SUMINISTRO',
+                p.tipoFiltro || '—',
+                p.MEDIDOR || 'SIN',
+                p.DIRECCION || '',
+                p.DISTRITO || ''
+            ]);
+
+            doc.autoTable({
+                head: headers,
+                body: data,
+                startY: 35,
+                theme: 'grid',
+                headStyles: { fillColor: [29, 78, 216], fontSize: 10 },
+                columnStyles: {
+                    0: { cellWidth: 8 },
+                    1: { cellWidth: 35 },
+                    2: { cellWidth: 15 },
+                    3: { cellWidth: 30 },
+                    4: { cellWidth: 50 },
+                    5: { cellWidth: 25 }
+                }
+            });
+
+            doc.save("seleccionados.pdf");
+        }
+
+        function exportarSeleccionExcel() {
+            if (selectedMarkers.length === 0) {
+                alert("No hay puntos seleccionados.");
+                return;
+            }
+
+            const data = selectedMarkers.map(p => ({
+                SUMINISTRO: p.SUMINISTRO || p['SUMINISTRO'] || p['N° SUMINISTRO'] || p['COD SUMINISTRO'] || 'SIN SUMINISTRO',
+                Tipo: p.tipoFiltro || '—',
+                Medidor: p.MEDIDOR || 'SIN MEDIDOR',
+                Direccion: p.DIRECCION || '',
+                Distrito: p.DISTRITO || '',
+                Actividad: p.ACTIVIDAD || 'SIN DATO',
+                Usuario: p.Usuario || '—'
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Seleccionados");
+            XLSX.writeFile(wb, "seleccionados.xlsx");
         }
 
         function aplicarFiltros() {
@@ -617,7 +862,7 @@
                     const marker = crearMarcador(m.getLatLng().lat, m.getLatLng().lng, m.properties.color);
                     marker.properties = m.properties;
                     marker.bindPopup(m._popup._content);
-                    marker.on('click', e => modoClic ? toggleSeleccionMarker(marker) : map.openPopup(marker.getPopup()));
+                    marker.on('click', e => modoClic ? toggleSeleccionMarker(marker) : mostrarDetallePunto(m.properties));
 
                     file.clusterGroup.addLayer(marker);
                     file.individualLayer.addLayer(marker);
@@ -640,18 +885,10 @@
             });
         }
 
-        function toggleModoClic() {
-            modoClic = !modoClic;
-            map.getContainer().style.cursor = modoClic ? 'crosshair' : 'grab';
-            document.getElementById('btnSeleccionar').classList.toggle('active', modoClic);
-            if (modoClic) alert("Modo selección activado. Haz clic en los puntos para seleccionarlos.");
-            aplicarFiltros();
-        }
-
         function toggleSeleccionMarker(marker) {
             const props = marker.properties;
-            const key = props.ID ? props.ID : `${props.LATITUD}_${props.LONGITUD}`;
-            const index = selectedMarkers.findIndex(s => (s.ID ? s.ID : `${s.LATITUD}_${s.LONGITUD}`) === key);
+            const key = props.SUMINISTRO || `${props.LATITUD}_${props.LONGITUD}`;
+            const index = selectedMarkers.findIndex(s => (s.SUMINISTRO || `${s.LATITUD}_${s.LONGITUD}`) === key);
             if (index === -1) {
                 selectedMarkers.push(props);
                 marker.setStyle({fillColor: '#00ff00', radius: 9});
@@ -661,10 +898,15 @@
             }
         }
 
-        function limpiarSeleccion() {
-            selectedMarkers = [];
-            aplicarFiltros();
+        function cerrarModal(id) {
+            document.getElementById(id).style.display = 'none';
         }
+
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        };
 
         function abrirFiltroVisibilidad() {
             document.getElementById('visA1').checked = visibilidad.A1;
@@ -672,6 +914,7 @@
             document.getElementById('visA3').checked = visibilidad.A3;
             document.getElementById('visIMP').checked = visibilidad.IMPOSIBILIDAD;
             document.getElementById('visProyecto').checked = visibilidad.PROYECTO;
+            document.getElementById('visVERENCAMPO').checked = visibilidad.VERENCAMPO;
             document.getElementById('filtroModal').style.display = 'flex';
         }
 
@@ -681,446 +924,10 @@
             visibilidad.A3 = document.getElementById('visA3').checked;
             visibilidad.IMPOSIBILIDAD = document.getElementById('visIMP').checked;
             visibilidad.PROYECTO = document.getElementById('visProyecto').checked;
+            visibilidad.VERENCAMPO = document.getElementById('visVERENCAMPO').checked;
             cerrarModal('filtroModal');
             aplicarFiltros();
         }
-
-        function abrirArchivosModal() {
-            if (loadedFiles.length === 0) return alert('No hay archivos cargados.');
-            let html = '';
-            loadedFiles.forEach((file, index) => {
-                html += `<label><input type="checkbox" class="file-vis" data-index="${index}" ${file.visible ? 'checked' : ''}> ${file.filename}</label><br>`;
-            });
-            document.getElementById('filesList').innerHTML = html;
-            document.getElementById('filesModal').style.display = 'flex';
-        }
-
-        function aplicarVisibilidadArchivos() {
-            document.querySelectorAll('.file-vis').forEach(cb => {
-                const index = parseInt(cb.dataset.index);
-                loadedFiles[index].visible = cb.checked;
-            });
-            cerrarModal('filesModal');
-            aplicarFiltros();
-        }
-
-        function cerrarModal(id) {
-            document.getElementById(id).style.display = 'none';
-        }
-
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) event.target.style.display = 'none';
-        };
-
-        function verReportePorLocalidad() {
-            const datos = [];
-            loadedFiles.forEach(file => {
-                if (file.visible) datos.push(...file.data);
-            });
-
-            if (datos.length === 0) {
-                document.getElementById('reporteContenido').innerHTML = 'No hay datos visibles.';
-                document.getElementById('btnExportReporte').style.display = 'none';
-                document.getElementById('reporteModal').style.display = 'flex';
-                return;
-            }
-
-            const porDistrito = {};
-            const totales = { A1:0, A2:0, A3:0, IMPOSIBILIDAD:0, PROYECTO:0, total:0 };
-
-            datos.forEach(row => {
-                const distrito = row.DISTRITO || 'SIN DISTRITO';
-                if (!porDistrito[distrito]) porDistrito[distrito] = { A1:0, A2:0, A3:0, IMPOSIBILIDAD:0, PROYECTO:0, total:0 };
-
-                let tipo = 'PROYECTO';
-                const act = (row.ACTIVIDAD || '').toString().trim().toUpperCase();
-                if (act === 'A1') tipo = 'A1';
-                else if (act === 'A2') tipo = 'A2';
-                else if (act === 'A3') tipo = 'A3';
-                else if (act === 'IMPOSIBILIDAD') tipo = 'IMPOSIBILIDAD';
-
-                porDistrito[distrito][tipo]++;
-                porDistrito[distrito].total++;
-                totales[tipo]++;
-                totales.total++;
-            });
-
-            let html = '<table style="width:100%; border-collapse:collapse;"><tr><th>Distrito</th><th>A1</th><th>A2</th><th>A3</th><th>Impos.</th><th>Proy.</th><th>Total</th></tr>';
-            Object.keys(porDistrito).sort().forEach(dist => {
-                const d = porDistrito[dist];
-                html += `<tr><td>${dist}</td><td>${d.A1}</td><td>${d.A2}</td><td>${d.A3}</td><td>${d.IMPOSIBILIDAD}</td><td>${d.PROYECTO}</td><td>${d.total}</td></tr>`;
-            });
-            html += `<tr style="font-weight:bold; background:#f0f0f0;"><td><strong>TOTAL GENERAL</strong></td><td><strong>${totales.A1}</strong></td><td><strong>${totales.A2}</strong></td><td><strong>${totales.A3}</strong></td><td><strong>${totales.IMPOSIBILIDAD}</strong></td><td><strong>${totales.PROYECTO}</strong></td><td><strong>${totales.total}</strong></td></tr></table>`;
-
-            document.getElementById('reporteContenido').innerHTML = html;
-            document.getElementById('btnExportReporte').style.display = 'block';
-            document.getElementById('reporteModal').style.display = 'flex';
-        }
-
-        function exportarReporteLocalidadExcel() {
-            alert("Exportación del reporte por localidad no implementada en esta versión.");
-        }
-
-        function exportarSeleccionPDF() {
-            if (selectedMarkers.length === 0) {
-                alert("No hay puntos seleccionados.");
-                return;
-            }
-
-            const doc = new jsPDF('l', 'mm', 'a4');
-            doc.setFontSize(16);
-            doc.text("Reporte de Puntos Seleccionados - Agua Potable", 14, 20);
-            doc.setFontSize(12);
-            doc.text(`Total: ${selectedMarkers.length} puntos | Fecha: ${new Date().toLocaleDateString('es-PE')}`, 14, 30);
-
-            const headers = [["N°", "ID", "Tipo", "Medidor", "Dirección", "Distrito", "Lat", "Lon"]];
-            const data = selectedMarkers.map((p, i) => [
-                i + 1,
-                p.ID || 'N/D',
-                p.tipoFiltro || '—',
-                p.MEDIDOR || 'SIN',
-                p.DIRECCION || '',
-                p.DISTRITO || '',
-                parseFloat(p.LATITUD).toFixed(6),
-                parseFloat(p.LONGITUD).toFixed(6)
-            ]);
-
-            doc.autoTable({
-                head: headers,
-                body: data,
-                startY: 40,
-                theme: 'grid',
-                headStyles: { fillColor: [29, 78, 216] }
-            });
-
-            doc.save("reporte_seleccionados.pdf");
-        }
-
-        function exportarSeleccionExcel() {
-            if (selectedMarkers.length === 0) {
-                alert("No hay puntos seleccionados.");
-                return;
-            }
-
-            const data = selectedMarkers.map(p => ({
-                ID: p.ID || 'N/D',
-                Tipo: p.tipoFiltro || '—',
-                Medidor: p.MEDIDOR || 'SIN MEDIDOR',
-                Direccion: p.DIRECCION || '',
-                Distrito: p.DISTRITO || '',
-                Latitud: p.LATITUD,
-                Longitud: p.LONGITUD,
-                Actividad: p.ACTIVIDAD || 'SIN DATO',
-                Usuario: p.Usuario || '—'
-            }));
-
-            const ws = XLSX.utils.json_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Seleccionados");
-            XLSX.writeFile(wb, "reporte_seleccionados.xlsx");
-        }
-
-        function imprimirMapaNormal() {
-            if (loadedFiles.length === 0) {
-                alert("Primero carga un archivo Excel con puntos.");
-                return;
-            }
-            window.print();
-        }
-
-        function toggleLocation() {
-            isLocationActive = !isLocationActive;
-            ubicacionControl.updateActiveState();
-
-            if (isLocationActive) {
-                if (!navigator.geolocation) {
-                    alert('La geolocalización no está disponible en este navegador.');
-                    isLocationActive = false;
-                    ubicacionControl.updateActiveState();
-                    return;
-                }
-
-                firstLocationReceived = false;
-
-                locationWatcher = navigator.geolocation.watchPosition(
-                    function(position) {
-                        const lat = position.coords.latitude;
-                        const lng = position.coords.longitude;
-                        const accuracy = position.coords.accuracy;
-
-                        if (!locationMarker) {
-                            locationMarker = L.marker([lat, lng], {
-                                icon: L.divIcon({
-                                    html: '<div style="background:#3b82f6;width:20px;height:20px;border-radius:50%;border:3px solid white;"></div>',
-                                    className: '',
-                                    iconSize: [20,20],
-                                    iconAnchor: [10,10]
-                                })
-                            }).addTo(map).bindPopup('Tu ubicación actual');
-                        } else {
-                            locationMarker.setLatLng([lat, lng]);
-                        }
-
-                        if (!locationAccuracyCircle) {
-                            locationAccuracyCircle = L.circle([lat, lng], {
-                                radius: accuracy,
-                                color: '#3b82f6',
-                                fillColor: '#93c5fd',
-                                fillOpacity: 0.2
-                            }).addTo(map);
-                        } else {
-                            locationAccuracyCircle.setLatLng([lat, lng]);
-                            locationAccuracyCircle.setRadius(accuracy);
-                        }
-
-                        if (!firstLocationReceived) {
-                            map.setView([lat, lng], 16);
-                            firstLocationReceived = true;
-                        }
-                    },
-                    function(error) {
-                        alert('Error al obtener ubicación: ' + error.message);
-                        isLocationActive = false;
-                        ubicacionControl.updateActiveState();
-                    },
-                    { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
-                );
-            } else {
-                if (locationWatcher) navigator.geolocation.clearWatch(locationWatcher);
-                if (locationMarker) map.removeLayer(locationMarker);
-                if (locationAccuracyCircle) map.removeLayer(locationAccuracyCircle);
-                locationMarker = null;
-                locationAccuracyCircle = null;
-            }
-        }
-
-        let tamanoPaquete = 20;
-        var grupos = {};
-
-        function prepararAgrupamiento() {
-            const todosMarkers = getAllVisibleMarkers();
-            if (todosMarkers.length < 5) {
-                alert("No hay suficientes puntos para agrupar (mínimo 5).");
-                return;
-            }
-
-            const input = prompt(
-                `¿Cuántos puntos por grupo deseas? (mínimo 5, máximo ${Math.floor(todosMarkers.length / 2)})\nValor por defecto: 20`,
-                "20"
-            );
-
-            if (input === null) return;
-
-            const num = parseInt(input);
-            if (isNaN(num) || num < 5 || num > todosMarkers.length) {
-                alert("Número inválido. Usa un valor entre 5 y " + Math.floor(todosMarkers.length / 2));
-                return;
-            }
-
-            tamanoPaquete = num;
-            agruparPuntosReal();
-        }
-
-        function agruparPuntosReal() {
-            const todosMarkers = getAllVisibleMarkers();
-
-            const numGrupos = Math.ceil(todosMarkers.length / tamanoPaquete);
-
-            const features = todosMarkers.map(m => {
-                return turf.point([parseFloat(m.properties.LONGITUD), parseFloat(m.properties.LATITUD)], m.properties);
-            });
-
-            const geojson = turf.featureCollection(features);
-
-            const clustered = turf.clustersKmeans(geojson, { numberOfClusters: numGrupos });
-
-            grupos = {};
-
-            clustered.features.forEach((feat, idx) => {
-                const grupoId = feat.properties.cluster;
-                if (!grupos[grupoId]) grupos[grupoId] = [];
-                grupos[grupoId].push(todosMarkers[idx]);
-
-                todosMarkers[idx].properties.grupo = grupoId;
-                todosMarkers[idx].properties.colorGrupo = coloresGrupos[grupoId % coloresGrupos.length];
-            });
-
-            aplicarFiltros();
-
-            mostrarSelectorGrupos(numGrupos);
-
-            alert(`Se crearon ${numGrupos} grupos de aproximadamente ${tamanoPaquete} puntos cada uno.\nUsa el selector para ver uno específico.`);
-        }
-
-        function mostrarSelectorGrupos(numGrupos) {
-            const modal = document.createElement('div');
-            modal.id = 'grupoModal';
-            modal.className = 'modal';
-            modal.style.display = 'flex';
-
-            let opciones = '<option value="todos">Mostrar Todos los Grupos</option>';
-            for (let i = 0; i < numGrupos; i++) {
-                const cantidad = grupos[i] ? grupos[i].length : '?';
-                opciones += `<option value="${i}">Grupo ${i+1} (${cantidad} puntos)</option>`;
-            }
-
-            modal.innerHTML = `
-                <div class="modal-content" style="width:340px;">
-                    <span class="close" onclick="this.closest('.modal').remove()">×</span>
-                    <h4>Seleccionar Grupo (${tamanoPaquete} aprox. por grupo)</h4>
-                    <select id="grupoSelect" onchange="mostrarGrupoSeleccionado()" style="width:100%; padding:8px; margin-bottom:15px;">
-                        ${opciones}
-                    </select>
-                    <button onclick="exportarGruposExcel()" style="width:100%; background:#f59e0b; color:white;">
-                        Exportar Todos los Grupos a Excel
-                    </button>
-                </div>
-            `;
-
-            document.body.appendChild(modal);
-        }
-
-        function mostrarGrupoSeleccionado() {
-            const select = document.getElementById('grupoSelect');
-            if (!select) return;
-
-            const valor = select.value;
-
-            loadedFiles.forEach(file => {
-                file.markers.forEach(m => {
-                    if (valor === 'todos' || m.properties.grupo == valor) {
-                        m.setStyle({ fillOpacity: 0.85 });
-                    } else {
-                        m.setStyle({ fillOpacity: 0.15 });
-                    }
-                });
-            });
-
-            map.eachLayer(layer => {
-                if (layer instanceof L.MarkerClusterGroup) {
-                    layer.refreshClusters();
-                }
-            });
-        }
-
-        function exportarGruposExcel() {
-            if (Object.keys(grupos).length === 0) {
-                alert("Primero debes agrupar los puntos.");
-                return;
-            }
-
-            Object.keys(grupos).forEach(grupoId => {
-                const puntosGrupo = grupos[grupoId];
-                const data = puntosGrupo.map(m => m.properties);
-
-                const ws = XLSX.utils.json_to_sheet(data);
-                const wb = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(wb, ws, `Grupo ${parseInt(grupoId) + 1}`);
-                XLSX.writeFile(wb, `grupo_${parseInt(grupoId) + 1}_${data.length}_puntos.xlsx`);
-            });
-
-            alert("Todos los grupos han sido exportados como archivos Excel separados.");
-        }
-
-        // ────────────────────────────────────────────────
-        // CARGA OBLIGATORIA DE data.json DESDE CARPETA LOCAL
-        // ────────────────────────────────────────────────
-
-        function cargarDataJsonLocal() {
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", "data.json", true);
-            xhr.responseType = "json";
-
-            xhr.onload = function () {
-                if (xhr.status === 200) {
-                    console.log("data.json cargado correctamente. Registros:", xhr.response.length);
-                    var json = xhr.response;
-                    if (json && json.length > 0) {
-                        const fileEntry = {
-                            filename: "data.json (carga local obligatoria)",
-                            data: json,
-                            markers: [],
-                            clusterGroup: L.markerClusterGroup({
-                                chunkedLoading: true,
-                                disableClusteringAtZoom: 16,
-                                maxClusterRadius: 50
-                            }),
-                            individualLayer: L.layerGroup(),
-                            visible: true
-                        };
-
-                        json.forEach(row => {
-                            if (!row.LATITUD || !row.LONGITUD) return;
-
-                            const actividadRaw = (row.ACTIVIDAD || '').toString().trim().toUpperCase();
-                            let tipo = 'PROYECTO';
-                            if (actividadRaw === 'A1') tipo = 'A1';
-                            else if (actividadRaw === 'A2') tipo = 'A2';
-                            else if (actividadRaw === 'A3') tipo = 'A3';
-                            else if (actividadRaw === 'IMPOSIBILIDAD') tipo = 'IMPOSIBILIDAD';
-
-                            const color = getColor(tipo);
-                            var marker = crearMarcador(row.LATITUD, row.LONGITUD, color);
-                            
-                            marker.properties = { ...row, tipoFiltro: tipo, color: color, filename: "data.json" };
-
-                            const popupContent = `
-                                <div style="min-width:220px; font-size:13px;">
-                                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
-                                        <strong>ID:</strong> ${row.ID || row.SUMINISTRO || 'N/D'}
-                                        <span id="toggle-${row.ID || row.SUMINISTRO || 'sinid'}" 
-                                              style="cursor:pointer; color:#3b82f6; font-size:16px; user-select:none;"
-                                              onclick="toggleDetails(this)"> ▶</span>
-                                    </div>
-                                    
-                                    <div id="details-${row.ID || row.SUMINISTRO || 'sinid'}" style="display:none; margin-top:8px; padding-top:8px; border-top:1px solid #eee;">
-                                        <strong>Actividad:</strong> ${row.ACTIVIDAD || '—'}<br>
-                                        <strong>Distrito:</strong> ${row.DISTRITO || '—'}<br>
-                                        <strong>Medidor:</strong> ${row.MEDIDOR || 'SIN MEDIDOR'}<br>
-                                        <strong>Dirección:</strong> ${row.DIRECCION || '—'}
-                                    </div>
-                                </div>
-                            `;
-
-                            marker.bindPopup(popupContent);
-
-                            marker.on('click', function(e) {
-                                if (modoClic) toggleSeleccionMarker(this);
-                                else map.openPopup(this.getPopup());
-                            });
-
-                            fileEntry.markers.push(marker);
-                            fileEntry.clusterGroup.addLayer(marker);
-                            fileEntry.individualLayer.addLayer(marker);
-                        });
-
-                        loadedFiles.push(fileEntry);
-                        actualizarDistritos();
-                        aplicarFiltros();
-                        console.log(`Puntos de data.json añadidos: ${fileEntry.markers.length} marcadores`);
-                        alert(`¡Cargados ${fileEntry.markers.length} puntos desde data.json (local)!`);
-                    } else {
-                        console.warn("data.json está vacío o no tiene registros válidos.");
-                        alert("data.json está vacío o no tiene datos válidos.");
-                    }
-                } else {
-                    console.error("No se encontró o no se pudo leer data.json. Código:", xhr.status);
-                    alert("No se pudo cargar data.json.\nVerifica:\n1. Que se llame exactamente 'data.json'\n2. Que esté en la misma carpeta que este HTML\n3. Prueba abrir en Firefox (más permisivo que Chrome)");
-                }
-            };
-
-            xhr.onerror = function () {
-                console.error("Error de red o archivo no accesible:", xhr.statusText);
-                alert("Error al intentar leer data.json.\nAsegúrate de que el archivo exista y prueba con Firefox o un servidor local simple.");
-            };
-
-            xhr.send();
-        }
-
-        // Ejecutar la carga al iniciar la página
-        window.addEventListener('load', function() {
-            cargarDataJsonLocal();
-        });
 
         map.on('zoomend', controlarVistaPorZoom);
         document.getElementById('distritoFilter').addEventListener('change', aplicarFiltros);

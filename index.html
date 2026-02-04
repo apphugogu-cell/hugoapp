@@ -4,165 +4,225 @@
     <meta charset="utf-8">
     <title>Conexiones Agua Potable - La Libertad</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
+
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet-sidebar-v2@3.2.3/css/leaflet-sidebar.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
-    
+
     <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
     <style>
         body { margin:0; padding:0; font-family: 'Segoe UI', Arial, sans-serif; background:#f8f9ff; }
         #map { height: 100vh; width: 100%; }
-        
+
         .leaflet-sidebar {
             background: linear-gradient(to bottom, #ffffff 0%, #f0f7ff 100%) !important;
             color: #1a365d !important;
             border-right: 1px solid #bfdbfe;
             box-shadow: 0 0 25px rgba(0,0,0,0.08);
         }
-        
+
         .leaflet-sidebar-tabs ul li a {
             background: #e0f2fe !important;
             color: #0369a1 !important;
         }
-        
+
         .leaflet-sidebar-tabs ul li a:hover,
         .leaflet-sidebar-tabs ul li.active a {
             background: #bae6fd !important;
         }
-        
+
         .leaflet-sidebar-header {
             background: #1d4ed8;
             color: white;
-            padding: 8px;
-            font-size: 16px;
+            padding: 1px;
+            font-size: 20px;
             font-weight: 600;
             border-bottom: 1px solid #3b82f6;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
         }
-        
+
         .leaflet-sidebar-content {
-            padding: 12px 8px;
+            padding: 24px 0px;
         }
-        
+
+        h4 {
+            color: #1d4ed8;
+            font-size: 22px;
+            margin: 0 0 20px 0;
+            text-align: center;
+            font-weight: 600;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #bfdbfe;
+        }
+
         button {
             width: 100%;
-            height: 18px;                    /* reducido a la mitad */
-            font-size: 11px;                 /* fuente más pequeña */
+            height: 30px;
+            font-size: 15px;
             font-weight: 600;
-            margin: 4px 0;                   /* menos espacio entre botones */
-            padding: 0 8px;
-            border-radius: 6px;
+            margin: 10px 0;
+            padding: 0 16px;
+            border-radius: 8px;
             border: none;
             background: #3b82f6;
             color: white;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.25s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            box-shadow: 0 1px 4px rgba(59,130,246,0.25);
+            gap: 10px;
+            box-shadow: 0 2px 8px rgba(59,130,246,0.25);
         }
-        
-        button i {
-            font-size: 12px;                 /* iconos más pequeños */
-        }
-        
+
         button:hover {
             background: #2563eb;
-            transform: translateY(-1px);
-            box-shadow: 0 3px 8px rgba(59,130,246,0.35);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(59,130,246,0.35);
         }
-        
+
         button:disabled {
             background: #cbd5e1;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
         }
-        
+
         button.danger {
             background: #ef4444 !important;
         }
-        
+
         button.danger:hover:not(:disabled) {
             background: #dc2626 !important;
         }
 
-        /* Botón activo en azul metálico */
-        button.active {
-            background: linear-gradient(135deg, #1e88e5, #1565c0) !important;
-            box-shadow: 0 4px 12px rgba(30, 136, 229, 0.5) !important;
-            transform: translateY(0) !important;
-            border: 1px solid #0d47a1;
+        button.success {
+            background: #10b981 !important;
+        }
+
+        button.success:hover:not(:disabled) {
+            background: #059669 !important;
+        }
+
+        button.warning {
+            background: #f59e0b !important;
+        }
+
+        button.warning:hover:not(:disabled) {
+            background: #d97706 !important;
         }
 
         select, input[type="text"], input[type="file"] {
             width: 100%;
-            padding: 8px 10px;
-            font-size: 12px;
+            padding: 14px 16px;
+            font-size: 15px;
             border: 1px solid #93c5fd;
-            border-radius: 6px;
-            margin: 6px 0;
+            border-radius: 8px;
+            margin: 10px 0;
             background: white;
         }
-        
+
         select:focus, input:focus {
             border-color: #3b82f6;
             outline: none;
-            box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
         }
 
+        /* LEYENDA INTERACTIVA MEJORADA */
         #leyenda {
             position: absolute;
             bottom: 20px;
             right: 20px;
             background: white;
-            padding: 10px 14px;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-            font-size: 12px;
+            padding: 14px 18px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            font-size: 13px;
             border: 1px solid #e5e7eb;
             z-index: 1000;
+            max-height: 70vh;
+            overflow-y: auto;
+            min-width: 200px;
         }
-        
-        .leyenda-item { display: flex; align-items: center; margin: 4px 0; }
-        .leyenda-color { width: 14px; height: 14px; border-radius: 50%; margin-right: 8px; border: 1px solid #666; }
-        
+
+        .leyenda-item { 
+            display: flex; 
+            align-items: center; 
+            margin: 6px 0; 
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .leyenda-item:hover {
+            background: #f0f7ff;
+        }
+
+        .leyenda-item.disabled {
+            opacity: 0.4;
+            text-decoration: line-through;
+        }
+
+        .leyenda-color { 
+            width: 16px; 
+            height: 16px; 
+            border-radius: 50%; 
+            margin-right: 10px; 
+            border: 1px solid #666; 
+            transition: all 0.2s;
+        }
+
+        .leyenda-item.disabled .leyenda-color {
+            background: #ccc !important;
+            border-color: #999;
+        }
+
         .legend-toggle {
             position: absolute;
-            bottom: 90px;
-            right: 30px;
+            bottom: 20px;
+            right: 20px;
             z-index: 1001;
             background: white;
             border: 2px solid #4682b4;
             border-radius: 50%;
-            width: 36px;
-            height: 36px;
+            width: 44px;
+            height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-            font-size: 16px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+            font-size: 18px;
             color: #4682b4;
+            transition: all 0.25s;
         }
-        
+
         .legend-toggle:hover {
             background: #4682b4;
             color: white;
             transform: scale(1.08);
+            box-shadow: 0 5px 15px rgba(70,130,180,0.4);
         }
-        
+
         #leyenda.hidden { display: none !important; }
-        
+
+        .location-control-active { background-color: #a5d8ff !important; }
+        .location-control-active i { animation: pulse 2s infinite; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.25); }
+            100% { transform: scale(1); }
+        }
+
         .modal { 
             display: none; 
             position: fixed; 
@@ -175,59 +235,273 @@
         }
         .modal-content { 
             background: white; 
-            padding: 16px; 
-            border-radius: 10px; 
-            width: 90%;
-            max-width: 400px;
-            max-height: 85vh;
-            overflow-y: auto;
+            color: #1f2937; 
+            padding: 24px; 
+            border-radius: 12px; 
+            width: 480px; 
+            max-height: 85vh; 
+            overflow-y: auto; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.25); 
         }
-        .close { float: right; font-size: 24px; cursor: pointer; color: #666; }
+        .close { float: right; font-size: 28px; cursor: pointer; color: #666; }
 
-        #detallePunto {
+        #info-panel {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 180px;
+            top: 0;
+            right: 0;
+            width: 360px;
+            height: 100%;
             background: white;
+            box-shadow: -8px 0 25px rgba(0,0,0,0.3);
+            z-index: 1050;
+            transform: translateX(100%);
+            transition: transform 0.35s ease;
+            overflow-y: auto;
+            padding: 20px 24px;
+            box-sizing: border-box;
+            border-left: 5px solid #1d4ed8;
+        }
+
+        #info-panel.open {
+            transform: translateX(0);
+        }
+
+        #info-panel .close-btn {
+            position: absolute;
+            top: 12px;
+            right: 16px;
+            font-size: 32px;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        #info-panel h2 {
+            margin: 0 0 20px 0;
+            color: #1d4ed8;
+            font-size: 22px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #bfdbfe;
+        }
+
+        #info-panel .detail-item {
+            margin: 14px 0;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        #info-panel .detail-item strong {
+            color: #1e293b;
+            min-width: 110px;
+            display: inline-block;
+        }
+
+        .resaltado-clic {
+            fill: #22c55e !important;
+            fill-opacity: 1 !important;
+            stroke: #14532d !important;
+            stroke-width: 6 !important;
+            stroke-opacity: 1 !important;
+            r: 12 !important;
+            filter: drop-shadow(0 0 10px #22c55e) drop-shadow(0 0 4px #15803d) !important;
+            transition: all 0.2s ease;
+        }
+
+        /* PANEL DE EDICIÓN DE GRUPOS FIJO */
+        #grupos-control-panel {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            width: 280px;
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
+            border: 2px solid #3b82f6;
+            display: none;
+        }
+
+        #grupos-control-panel.visible {
+            display: block;
+        }
+
+        #grupos-control-panel h4 {
+            font-size: 16px;
+            margin: 0 0 12px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #bfdbfe;
+        }
+
+        .grupo-activo-item {
+            background: #f0f9ff;
+            border: 2px solid #3b82f6;
             border-radius: 8px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.18);
-            padding: 12px;
+            padding: 10px;
+            margin: 8px 0;
+            position: relative;
+        }
+
+        .grupo-activo-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .grupo-color-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid #333;
+        }
+
+        .btn-accion {
+            width: 100%;
+            height: 28px;
+            font-size: 12px;
+            margin: 4px 0;
+        }
+
+        .selection-box {
+            border: 2px dashed #2563eb;
+            background: rgba(37, 99, 235, 0.15);
+            position: absolute;
+            pointer-events: none;
             z-index: 1000;
             display: none;
-            max-height: 70vh;
-            overflow-y: auto;
-            border: 1px solid #bfdbfe;
+        }
+
+        .counter-panel {
+            position: fixed;
+            top: 20px;
+            right: 320px;
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            z-index: 3000;
+            display: none;
+            min-width: 200px;
+            font-weight: 600;
+        }
+
+        .counter-panel.visible {
+            display: block;
+        }
+
+        .btn-small {
+            width: auto;
+            height: 32px;
+            padding: 0 12px;
             font-size: 12px;
+            margin: 4px 2px;
         }
 
-        #detallePunto h3 {
-            margin: 0 0 10px 0;
-            color: #1d4ed8;
-            font-size: 16px;
-            text-align: center;
+        .group-item {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
         }
 
-        #detallePunto .dato {
-            margin: 6px 0;
-            line-height: 1.3;
+        .group-item.editing {
+            border-color: #f59e0b;
+            background: #fffbeb;
         }
 
-        #detallePunto .label {
-            font-weight: bold;
-            color: #1d4ed8;
-            display: inline-block;
-            width: 90px;
+        /* BOTÓN DE ACTUALIZAR ARCHIVO */
+        .file-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 5px;
+        }
+
+        .btn-refresh {
+            background: #3b82f6;
+            width: 28px;
+            height: 28px;
+            padding: 0;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-refresh:hover {
+            background: #2563eb;
+            transform: rotate(180deg);
+        }
+
+        @media print {
+            #leyenda, .leaflet-control-container, .leaflet-sidebar, .legend-toggle, #info-panel, 
+            .modal, button, select, input, .leaflet-top, .leaflet-bottom, .counter-panel, .selection-box,
+            #grupos-control-panel { display: none !important; }
+            #map { height: 100vh !important; }
+            body::before { 
+                content: "Mapa de Conexiones de Agua Potable - Región La Libertad"; 
+                display: block; 
+                text-align: center; 
+                font-size: 26px; 
+                font-weight: bold; 
+                color: #1d4ed8; 
+                margin: 30px 0 20px; 
+            }
+        }
+
+        /* Ubicación GPS marker */
+        .gps-marker {
+            background: #3b82f6;
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 0 0 2px #3b82f6, 0 0 20px rgba(59,130,246,0.5);
+        }
+        .gps-accuracy {
+            fill: #3b82f6;
+            fill-opacity: 0.2;
+            stroke: #3b82f6;
+            stroke-width: 1;
         }
     </style>
+<base target="_blank">
 </head>
 <body data-print-date="">
-    <div id="map"></div>
 
-    <div id="detallePunto">
-        <h3 id="tituloSuministro">SUMINISTRO</h3>
-        <div id="contenidoDetalle"></div>
+    <!-- Panel de Control de Grupos (Siempre visible cuando hay grupos) -->
+    <div id="grupos-control-panel">
+        <h4><i class="fa fa-layer-group"></i> Control de Grupos</h4>
+        <div id="grupos-activos-lista"></div>
+        <hr style="border-color: #bfdbfe; margin: 12px 0;">
+        <button onclick="finalizarEdicionTodos()" class="danger" style="height: 32px; font-size: 13px;">
+            <i class="fa fa-times"></i> Cerrar Edición
+        </button>
     </div>
+
+    <!-- Panel flotante de contador -->
+    <div id="counterPanel" class="counter-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <div style="font-size: 14px; font-weight: 400;">SELECCIÓN ACTUAL</div>
+            <button onclick="cerrarSeleccionLasso()" style="background: transparent; border: none; color: white; cursor: pointer; width: 24px; height: 24px; padding: 0; margin: 0; box-shadow: none;">
+                <i class="fa fa-times" style="font-size: 16px;"></i>
+            </button>
+        </div>
+        <div id="contadorNumero" style="font-size: 32px;">0</div>
+        <div style="font-size: 12px; margin-top: 8px; opacity: 0.9;">puntos seleccionados</div>
+        <button onclick="crearGrupoDesdeSeleccion()" class="success" style="margin-top: 12px; height: 36px; font-size: 13px;">
+            <i class="fa fa-plus"></i> Crear Grupo
+        </button>
+        <button onclick="limpiarSeleccionLasso()" class="danger" style="margin-top: 8px; height: 32px; font-size: 12px;">
+            <i class="fa fa-trash"></i> Limpiar
+        </button>
+    </div>
+
+    <!-- Caja de selección visual -->
+    <div id="selectionBox" class="selection-box"></div>
+
+    <div id="map"></div>
 
     <div id="sidebar" class="leaflet-sidebar collapsed">
         <div class="leaflet-sidebar-tabs">
@@ -239,55 +513,114 @@
         <div class="leaflet-sidebar-content">
             <div class="leaflet-sidebar-pane active" id="home">
                 <h1 class="leaflet-sidebar-header">
-                    <i class="fa fa-tint"></i> Agua Potable
+                    <i class="fa fa-tint"></i> Conexiones Agua Potable
                     <span class="leaflet-sidebar-close"><i class="fa fa-caret-left"></i></span>
                 </h1>
-                
+
                 <input type="file" id="excelFile" accept=".xlsx" multiple />
+
+                <button id="btn-matriz" style="background:#7c3aed; color:white; margin:10px 0;">
+                    <i class="fa fa-database"></i> Cargar Matriz del Proyecto
+                </button>
+
+                <button onclick="toggleJsonReferencia()" id="btn-ver-json" style="background: #0369a1; margin-top: 8px;">
+                    <i class="fa fa-map-marker-alt"></i> <span id="txt-btn-json">Ver Puntos de Referencia (JSON)</span>
+                </button>
+
+                <select id="distritoFilter">
+                    <option value="">Selecciona distrito</option>
+                </select>
+
+                <button onclick="abrirGestionArchivos()"><i class="fa fa-folder"></i> Gestionar Archivos</button>
+
+                <div style="margin-top:20px;">
+                    <button id="btnConteo" disabled onclick="ejecutarConteo()"><i class="fa fa-chart-pie"></i> Ver Conteo General</button>
+                    <button id="btnReporte" disabled onclick="ejecutarReporte()"><i class="fa fa-table"></i> Reporte por Localidad</button>
+                </div>
+
+                <button id="btnSeleccionar" onclick="toggleModoClic()"><i class="fa fa-hand-pointer"></i> SELECCIONAR PUNTOS</button>
+                <button onclick="limpiarSeleccion()"><i class="fa fa-eraser"></i> Limpiar Selección</button>
+
+                <button onclick="toggleModoLasso()" id="btnLasso" class="warning">
+                    <i class="fa fa-object-group"></i> Selección a Mano Alzada
+                </button>
+
+                <button onclick="prepararAgrupamiento()">
+                    <i class="fa fa-calculator"></i> Agrupar por Cantidad
+                </button>
+
                 
-                <button id="btn-matriz" style="background:#7c3aed; color:white; margin:6px 0;">
-                    <i class="fa fa-database"></i> Matriz
+
+                <button onclick="mostrarPanelVersiones()" style="background: #3b82f6;">
+                    <i class="fa fa-history"></i> Ver Versiones de Agrupación
                 </button>
                 
-                <select id="distritoFilter">
-                    <option value="">Distrito</option>
-                </select>
-                
-                <button onclick="abrirGestionArchivos()"><i class="fa fa-folder"></i> Archivos</button>
-                
-                <div style="margin-top:10px;">
-                    <button id="btnConteo" disabled onclick="ejecutarConteo()"><i class="fa fa-chart-pie"></i> Conteo</button>
-                    <button id="btnReporte" disabled onclick="ejecutarReporte()"><i class="fa fa-table"></i> Reporte</button>
-                    <button id="btnFiltro" onclick="abrirFiltroVisibilidad()"><i class="fa fa-filter"></i> Filtro</button>
+                <button onclick="abrirGestionGrupos()" style="background: #8b5cf6;">
+                    <i class="fa fa-edit"></i> Gestionar Grupos
+                </button>
+
+                <button onclick="limpiarAgrupamiento()">
+                    <i class="fa fa-undo"></i> Limpiar Grupos / Colores
+                </button>
+
+                <button onclick="imprimirMapaNormal()">
+                    <i class="fa fa-print"></i> IMPRIMIR MAPA
+                </button>
+
+                <hr style="border-color:#bfdbfe; margin:20px 0;">
+
+                <input type="text" id="search-box" placeholder="Buscar SUMINISTRO / Dir / Medidor">
+
+                <hr style="border-color:#bfdbfe; margin:20px 0;">
+
+                <div id="export-buttons">
+                    <button onclick="exportarSeleccionPDF()"><i class="fa fa-file-pdf"></i> PDF (sin ubicación)</button>
+                    <button onclick="exportarSeleccionExcel()"><i class="fa fa-file-excel"></i> EXCEL (sin ubicación)</button>
                 </div>
-                
-                <button id="btnSeleccionar" onclick="toggleModoClic()"><i class="fa fa-hand-pointer"></i> Seleccionar</button>
-                <button onclick="limpiarSeleccion()"><i class="fa fa-eraser"></i> Limpiar</button>
-                
-                <button onclick="prepararAgrupamiento()"><i class="fa fa-object-group"></i> Agrupar</button>
-                
-                <button onclick="imprimirMapaNormal()"><i class="fa fa-print"></i> Imprimir</button>
-                
-                <hr style="margin:10px 0;">
-                
-                <input type="text" id="search-box" placeholder="SUMINISTRO">
-                
-                <div id="export-buttons" style="margin-top:10px;">
-                    <button onclick="exportarSeleccionPDF()"><i class="fa fa-file-pdf"></i> PDF</button>
-                    <button onclick="exportarSeleccionExcel()"><i class="fa fa-file-excel"></i> XLS</button>
-                </div>
+                <small style="color:#64748b; display:block; text-align:center; margin-top:10px;">
+                    Exporta la selección actual sin coordenadas
+                </small>
             </div>
         </div>
     </div>
 
+    <div id="info-panel">
+        <span class="close-btn" onclick="cerrarPanelInfo()">×</span>
+        <h2>Detalle del Suministro</h2>
+        <div id="info-content"></div>
+    </div>
+
+    <!-- Leyenda Interactiva -->
     <div id="leyenda" class="hidden">
-        <strong>Leyenda</strong><br>
-        <div class="leyenda-item"><div class="leyenda-color" style="background:#d32f2f;"></div>A1</div>
-        <div class="leyenda-item"><div class="leyenda-color" style="background:#ffeb3b;"></div>A2</div>
-        <div class="leyenda-item"><div class="leyenda-color" style="background:#4caf50;"></div>A3</div>
-        <div class="leyenda-item"><div class="leyenda-color" style="background:#212121;"></div>Imp</div>
-        <div class="leyenda-item"><div class="leyenda-color" style="background:#4682b4;"></div>Proy</div>
-        <div class="leyenda-item"><div class="leyenda-color" style="background:#ff9800;"></div>Campo</div>
+        <strong>Actividades</strong><br>
+        <div class="leyenda-item" onclick="toggleTipoVisibilidad('A1')" id="leyenda-A1">
+            <div class="leyenda-color" style="background:#d32f2f;"></div>A1
+        </div>
+        <div class="leyenda-item" onclick="toggleTipoVisibilidad('A2')" id="leyenda-A2">
+            <div class="leyenda-color" style="background:#ffeb3b;"></div>A2
+        </div>
+        <div class="leyenda-item" onclick="toggleTipoVisibilidad('A3')" id="leyenda-A3">
+            <div class="leyenda-color" style="background:#4caf50;"></div>A3
+        </div>
+        <div class="leyenda-item" onclick="toggleTipoVisibilidad('IMPOSIBILIDAD')" id="leyenda-IMPOSIBILIDAD">
+            <div class="leyenda-color" style="background:#212121;"></div>Imposibilidad
+        </div>
+        <div class="leyenda-item" onclick="toggleTipoVisibilidad('PROYECTO')" id="leyenda-PROYECTO">
+            <div class="leyenda-color" style="background:#4682b4;"></div>Proyecto Total
+        </div>
+        <div class="leyenda-item" onclick="toggleTipoVisibilidad('VERENCAMPO')" id="leyenda-VERENCAMPO">
+            <div class="leyenda-color" style="background:#ff9800;"></div>Ver en Campo
+        </div>
+
+        <div id="gruposLeyenda" style="margin-top: 15px; border-top: 2px solid #e5e7eb; padding-top: 10px; display: none;">
+            <strong>Mis Grupos</strong>
+            <div id="gruposLeyendaContent"></div>
+        </div>
+
+        <div id="archivosLeyenda" style="margin-top: 15px; border-top: 2px solid #e5e7eb; padding-top: 10px; display: none;">
+            <strong>Archivos</strong>
+            <div id="archivosLeyendaContent"></div>
+        </div>
     </div>
 
     <div class="legend-toggle" id="toggleLeyenda" title="Mostrar/Ocultar leyenda">
@@ -297,52 +630,65 @@
     <div id="conteoModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="cerrarModal('conteoModal')">×</span>
-            <h4>Conteo</h4>
+            <h4>Conteo General</h4>
             <div>A1: <span id="modalCountA1">0</span></div>
             <div>A2: <span id="modalCountA2">0</span></div>
             <div>A3: <span id="modalCountA3">0</span></div>
-            <div>Imp: <span id="modalCountIMP">0</span></div>
-            <div>Proy: <span id="modalCountPROY">0</span></div>
-            <div>Campo: <span id="modalCountVERCAMPO">0</span></div>
+            <div>Imposibilidad: <span id="modalCountIMP">0</span></div>
+            <div>Proyecto Total: <span id="modalCountPROY">0</span></div>
+            <div>Ver en Campo: <span id="modalCountVERCAMPO">0</span></div>
             <hr>
-            <div>Total: <span id="modalCountTotal">0</span></div>
+            <div>Total cargados: <span id="modalCountTotal">0</span></div>
+            <div>Selección actual: <span id="modalSelectionCount">0</span> puntos</div>
         </div>
     </div>
 
     <div id="reporteModal" class="modal">
         <div class="modal-content">
             <span class="close" onclick="cerrarModal('reporteModal')">×</span>
-            <h4>Reporte</h4>
+            <h4>Reporte por Localidad</h4>
             <div id="reporteContenido"></div>
         </div>
     </div>
 
     <div id="gestionArchivosModal" class="modal">
-        <div class="modal-content" style="width:420px;">
+        <div class="modal-content" style="width:480px;">
             <span class="close" onclick="cerrarModal('gestionArchivosModal')">×</span>
-            <h4>Archivos</h4>
-            <div id="gestionFilesList" style="margin: 10px 0; max-height:300px; overflow-y:auto;"></div>
-            <button onclick="aplicarGestionArchivos()" style="margin-top:10px; background:#16a34a; color:white; padding:8px; width:100%;">
-                Aplicar
+            <h4>Gestionar Archivos</h4>
+            <div id="gestionFilesList" style="margin: 15px 0; max-height:400px; overflow-y:auto;"></div>
+            <button onclick="aplicarGestionArchivos()" style="margin-top:20px; background:#16a34a; color:white; padding:12px; width:100%;">
+                Aplicar y Cerrar
             </button>
         </div>
     </div>
 
-    <div id="filtroModal" class="modal">
+    <div id="agrupamientoModal" class="modal">
         <div class="modal-content">
-            <span class="close" onclick="cerrarModal('filtroModal')">×</span>
-            <h4>Filtro</h4>
-            <div style="text-align: left; margin: 10px 0; font-size:12px;">
-                <label><input type="checkbox" id="visA1" checked> A1</label><br>
-                <label><input type="checkbox" id="visA2" checked> A2</label><br>
-                <label><input type="checkbox" id="visA3" checked> A3</label><br>
-                <label><input type="checkbox" id="visIMP" checked> Imp</label><br>
-                <label><input type="checkbox" id="visProyecto" checked> Proy</label><br>
-                <label><input type="checkbox" id="visVERENCAMPO" checked> Campo</label>
+            <span class="close" onclick="cerrarModal('agrupamientoModal')">×</span>
+            <h4>Resumen de Grupos por Proximidad</h4>
+
+            <div style="margin: 15px 0; display: flex; gap: 12px;">
+                <button onclick="exportarGruposExcel()" style="background:#1e8449; flex:1;">
+                    <i class="fa fa-file-excel"></i> Exportar Excel Completo
+                </button>
+                <button onclick="exportarGruposPDF()" style="background:#d35400; flex:1;">
+                    <i class="fa fa-file-pdf"></i> Exportar PDF
+                </button>
             </div>
-            <button onclick="aplicarFiltroVisibilidad()" style="margin-top:10px; background:#1d4ed8; color:white; padding:8px; width:100%;">
-                Aplicar
-            </button>
+
+            <div id="agrupamientoContenido" style="margin-top:20px;"></div>
+        </div>
+    </div>
+
+    <div id="gestionGruposModal" class="modal">
+        <div class="modal-content" style="width: 550px;">
+            <span class="close" onclick="cerrarModal('gestionGruposModal')">×</span>
+            <h4>Gestionar Grupos</h4>
+            <div style="background: #f0f9ff; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 13px;">
+                <i class="fa fa-info-circle"></i> 
+                Activa "Editar" para hacer clic en el mapa y agregar/quitar puntos de un grupo específico.
+            </div>
+            <div id="listaGruposEdicion" style="max-height: 400px; overflow-y: auto;"></div>
         </div>
     </div>
 
@@ -368,12 +714,6 @@
         var selectedMarkers = [];
         var modoClic = false;
 
-        var locationWatcher = null;
-        var locationMarker = null;
-        var locationAccuracyCircle = null;
-        var isLocationActive = false;
-        var firstLocationReceived = false;
-
         var visibilidad = {
             A1: true,
             A2: true,
@@ -383,6 +723,9 @@
             VERENCAMPO: true
         };
 
+        // Control de visibilidad de archivos
+        var visibilidadArchivos = {};
+
         var sidebar = L.control.sidebar({
             container: 'sidebar',
             position: 'left',
@@ -390,9 +733,71 @@
             autopan: false
         }).addTo(map);
 
+        var matrizUbicaciones = new Map();
+
+        let currentHighlightedMarker = null;
+        let currentSelectedMarker = null;
+
+        var clusterHulls = L.layerGroup().addTo(map);
+
+        const clusterColors = [
+            '#e53935', '#d81b60', '#8e24aa', '#5e35b1', '#3949ab', '#1e88e5',
+            '#039be5', '#00acc1', '#00897b', '#43a047', '#7cb342', '#c0ca33',
+            '#fdd835', '#ffb300', '#fb8c00', '#f4511e', '#6d4c41', '#757575',
+            '#546e7a', '#ec407a', '#ab47bc', '#7e57c2', '#5c6bc0', '#42a5f5'
+        ];
+
+        // Variables para grupos y selección
+        var editableGroups = {};
+        var groupIdCounter = 1;
+        var currentEditingGroup = null;
+        var modoLasso = false;
+        var lassoStart = null;
+        var lassoMarkers = [];
+
+        // CONTADOR DE AGRUPACIONES (para generar distribuciones alternativas)
+        var contadorAgrupaciones = 0;
+        var maxIntentos = 5;
+
+        // CAPA DE REFERENCIA JSON
+        var jsonReferenciaLayer = L.layerGroup();
+        var jsonReferenciaVisible = false;
+        var jsonPuntosCargados = [];
+
+        // TRACKING DE SUMINISTROS SIN UBICACIÓN
+        var suministrosSinUbicacion = []; // Almacena los que no tienen coords
+
+        // Variable para geolocalización
+        var gpsMarker = null;
+        var gpsCircle = null;
+        var gpsInterval = null;
+
+        function getClusterColor(id) {
+            return clusterColors[id % clusterColors.length];
+        }
+
         function normalizarSuministro(s) {
             if (!s) return '';
             return s.toString().trim().replace(/\s+/g, ' ').toUpperCase();
+        }
+
+        function obtenerIdentificador(row) {
+            // Buscar en múltiples campos posibles: SUMINISTRO, CLICODFAC, ID, etc.
+            const camposPosibles = [
+                'SUMINISTRO', 'Suministro', 'suministro', 'N° SUMINISTRO', 'COD SUMINISTRO', 'SUM',
+                'CLICODFAC', 'CLICOD', 'CODFAC', 'CLIFAC', 'FAC', 
+                'ID', 'Id', 'id', 'ID_SUMINISTRO', 'ID_SUM',
+                'NUMERO', 'Numero', 'NUM', 'NRO', 'NÚMERO',
+                'CONTRATO', 'Contrato', 'CONTRAT',
+                'SERVICIO', 'Servicio', 'SERV'
+            ];
+
+            for (let campo of camposPosibles) {
+                if (row[campo] && row[campo].toString().trim() !== '') {
+                    return row[campo].toString().trim();
+                }
+            }
+            return null;
         }
 
         function tienePalabraCampo(texto) {
@@ -423,22 +828,251 @@
             });
         }
 
+        function resaltarMarcador(marker) {
+            if (currentHighlightedMarker && currentHighlightedMarker !== marker) {
+                currentHighlightedMarker.setStyle({
+                    fillColor: currentHighlightedMarker.originalColor || currentHighlightedMarker.options.fillColor,
+                    radius: 6,
+                    weight: 1,
+                    color: '#000'
+                });
+            }
+            marker.originalColor = marker.options.fillColor;
+            marker.setStyle({ className: 'resaltado-clic' });
+            currentHighlightedMarker = marker;
+        }
+
+        function quitarResaltado() {
+            if (currentHighlightedMarker) {
+                currentHighlightedMarker.setStyle({
+                    fillColor: currentHighlightedMarker.originalColor || currentHighlightedMarker.options.fillColor,
+                    radius: 6,
+                    weight: 1,
+                    color: '#000'
+                });
+                currentHighlightedMarker = null;
+            }
+        }
+
+        function mostrarInfoPanel(props) {
+            const content = document.getElementById('info-content');
+            const suministro = props.SUMINISTRO || props['SUMINISTRO'] || props['N° SUMINISTRO'] || props['COD SUMINISTRO'] || 'SIN SUMINISTRO';
+            const id = props.ID || 'N/D';
+            const medidor = props.MEDIDOR || 'SIN MEDIDOR';
+            const actividad = props.ACTIVIDAD || 'SIN DATO';
+            const usuario = props.Usuario || '—';
+            const direccion = props.DIRECCION || '—';
+            const distrito = props.DISTRITO || '—';
+            const verCampo = tienePalabraCampo([
+                props['VER EN CAMPO'],
+                props['VER_EN_CAMPO'],
+                props['VERENCAMPO'],
+                props.ACTIVIDAD,
+                props.OBSERVACION,
+                props.NOTAS
+            ].filter(Boolean).join(' ')) ? 'SÍ' : 'NO';
+
+            // Verificar grupos actuales
+            let grupoInfo = '';
+            const gruposActuales = [];
+            for (let gid in editableGroups) {
+                if (editableGroups[gid].suministros.includes(normalizarSuministro(suministro))) {
+                    gruposActuales.push(editableGroups[gid].name);
+                }
+            }
+
+            if (gruposActuales.length > 0) {
+                grupoInfo = `<div style="margin-top: 8px; padding: 6px; background: #f0f9ff; border-left: 4px solid #3b82f6; border-radius: 4px; font-size: 13px;">
+                    <strong>En grupos:</strong> ${gruposActuales.join(', ')}
+                </div>`;
+            }
+
+            content.innerHTML = `
+                <div style="font-size:20px; font-weight:bold; color:#1d4ed8; margin-bottom:16px;">
+                    ${suministro}
+                </div>
+                ${id !== 'N/D' ? `<div style="color:#555; margin-bottom:20px; font-size:14px;">ID: ${id}</div>` : ''}
+                <div class="detail-item"><strong>Medidor:</strong> ${medidor}</div>
+                <div class="detail-item"><strong>Actividad:</strong> ${actividad}</div>
+                <div class="detail-item"><strong>Usuario:</strong> ${usuario}</div>
+                <div class="detail-item"><strong>Dirección:</strong> ${direccion}</div>
+                <div class="detail-item"><strong>Distrito:</strong> ${distrito}</div>
+                <div class="detail-item"><strong>Ver en Campo:</strong> ${verCampo}</div>
+                ${grupoInfo}
+            `;
+
+            document.getElementById('info-panel').classList.add('open');
+        }
+
+        function cerrarPanelInfo() {
+            document.getElementById('info-panel').classList.remove('open');
+            quitarResaltado();
+            currentSelectedMarker = null;
+        }
+
+        // CONTROL DE GEOLOCALIZACIÓN CORREGIDO
+        L.Control.UbicacionButton = L.Control.extend({
+            options: { position: 'topright' },
+            onAdd: function(map) {
+                const container = L.DomUtil.create('div', 'leaflet-bar leaflet-control');
+                this.button = L.DomUtil.create('a', '', container);
+                this.button.href = '#';
+                this.button.title = 'Mi ubicación en tiempo real';
+                this.button.innerHTML = '<i class="fa fa-location-arrow" style="font-size:18px; line-height:26px;"></i>';
+                this.button.style.width = '34px';
+                this.button.style.height = '34px';
+                this.button.style.display = 'block';
+                this.button.style.textAlign = 'center';
+                this.button.style.backgroundColor = '#ffffff';
+                this.button.style.borderBottom = '1px solid #ccc';
+
+                L.DomEvent
+                    .on(this.button, 'mousedown', L.DomEvent.stopPropagation)
+                    .on(this.button, 'click', L.DomEvent.preventDefault)
+                    .on(this.button, 'click', toggleGeolocation);
+
+                return container;
+            }
+        });
+
+        const ubicacionControl = new L.Control.UbicacionButton();
+        ubicacionControl.addTo(map);
+
+        function toggleGeolocation() {
+            const btn = ubicacionControl.button;
+
+            if (gpsInterval) {
+                // Detener
+                clearInterval(gpsInterval);
+                gpsInterval = null;
+                if (gpsMarker) map.removeLayer(gpsMarker);
+                if (gpsCircle) map.removeLayer(gpsCircle);
+                btn.classList.remove('location-control-active');
+                btn.innerHTML = '<i class="fa fa-location-arrow" style="font-size:18px; line-height:26px;"></i>';
+            } else {
+                // Iniciar
+                if (!navigator.geolocation) {
+                    alert('Geolocalización no soportada');
+                    return;
+                }
+
+                btn.classList.add('location-control-active');
+                btn.innerHTML = '<i class="fa fa-spinner fa-spin" style="font-size:18px; line-height:26px;"></i>';
+
+                function updatePosition() {
+                    navigator.geolocation.getCurrentPosition(
+                        (position) => {
+                            const lat = position.coords.latitude;
+                            const lng = position.coords.longitude;
+                            const accuracy = position.coords.accuracy;
+
+                            if (!gpsMarker) {
+                                gpsMarker = L.marker([lat, lng], {
+                                    icon: L.divIcon({
+                                        className: 'gps-marker',
+                                        iconSize: [16, 16],
+                                        iconAnchor: [8, 8]
+                                    })
+                                }).addTo(map);
+                                gpsCircle = L.circle([lat, lng], {
+                                    radius: accuracy,
+                                    className: 'gps-accuracy'
+                                }).addTo(map);
+                            } else {
+                                gpsMarker.setLatLng([lat, lng]);
+                                gpsCircle.setLatLng([lat, lng]);
+                                gpsCircle.setRadius(accuracy);
+                            }
+
+                            btn.innerHTML = '<i class="fa fa-location-arrow" style="font-size:18px; line-height:26px;"></i>';
+                        },
+                        (error) => {
+                            console.error('Error GPS:', error);
+                        },
+                        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    );
+                }
+
+                updatePosition();
+                gpsInterval = setInterval(updatePosition, 5000);
+                map.locate({setView: true, maxZoom: 16});
+            }
+        }
+
+        document.getElementById('toggleLeyenda').addEventListener('click', function() {
+            const leyenda = document.getElementById('leyenda');
+            const icon = this.querySelector('i');
+            leyenda.classList.toggle('hidden');
+            icon.classList.toggle('fa-eye');
+            icon.classList.toggle('fa-eye-slash');
+            this.title = leyenda.classList.contains('hidden') ? "Mostrar leyenda" : "Ocultar leyenda";
+        });
+
         document.getElementById('btn-matriz').addEventListener('click', function() {
             document.getElementById('excelFile').click();
         });
 
+        async function cargarMatrizJsonDesdeGitHub() {
+            const urlJson = "https://raw.githubusercontent.com/apphugogu-cell/GU-MEDIDORES/main/data.json";
+
+            try {
+                const response = await fetch(urlJson);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const json = await response.json();
+
+                let cargados = 0;
+                matrizUbicaciones.clear();
+
+                json.forEach(row => {
+                    const suministro = normalizarSuministro(
+                        row.SUMINISTRO || row['SUMINISTRO'] || row['N° SUMINISTRO'] || row['COD SUMINISTRO'] || ''
+                    );
+                    const lat = parseFloat(row.LATITUD || row.LAT || row.Latitud);
+                    const lng = parseFloat(row.LONGITUD || row.LON || row.Longitud);
+
+                    if (suministro && !isNaN(lat) && !isNaN(lng) && lat !== 0 && lng !== 0) {
+                        matrizUbicaciones.set(suministro, { lat, lng });
+                        cargados++;
+                    }
+                });
+
+                alert(`¡Matriz data.json cargada automáticamente!\n${cargados} suministros con coordenadas válidas.`);
+                actualizarLeyendaJSONInicial();
+            } catch (err) {
+                console.error(err);
+                alert(`No se pudo cargar data.json.\n\nVerifica:\n1. El archivo está en la raíz del repositorio\n2. Se llama exactamente "data.json" (con punto)\n3. El repositorio es público\n\nPuedes cargar manualmente con el botón.`);
+                document.getElementById('excelFile').click();
+            }
+        }
+
+        window.addEventListener('load', cargarMatrizJsonDesdeGitHub);
+
         document.getElementById('excelFile').addEventListener('change', function(e) {
-            const files = e.target.files;
+            procesarArchivos(e.target.files);
+            e.target.value = '';
+        });
+
+        function procesarArchivos(files, esActualizacion = false, fileIndex = null) {
             if (files.length === 0) return;
 
             let conUbicacionPropia = 0;
             let ubicadosPorMatriz = 0;
             let noUbicados = 0;
+            let sinUbicacionLista = []; // Lista detallada de los sin ubicación
 
-            Array.from(files).forEach(file => {
+            // Si es actualización, eliminar el archivo anterior
+            if (esActualizacion && fileIndex !== null) {
+                const oldFile = loadedFiles[fileIndex];
+                if (map.hasLayer(oldFile.clusterGroup)) map.removeLayer(oldFile.clusterGroup);
+                if (map.hasLayer(oldFile.individualLayer)) map.removeLayer(oldFile.individualLayer);
+                loadedFiles.splice(fileIndex, 1);
+            }
+
+            Array.from(files).forEach((file, idx) => {
                 var reader = new FileReader();
-                reader.onload = function(e) {
-                    var data = new Uint8Array(e.target.result);
+                reader.onload = function(ev) {
+                    var data = new Uint8Array(ev.target.result);
                     var workbook = XLSX.read(data, {type: 'array'});
                     var sheet = workbook.Sheets[workbook.SheetNames[0]];
                     var json = XLSX.utils.sheet_to_json(sheet, {defval: ""});
@@ -454,15 +1088,21 @@
                         }),
                         individualLayer: L.layerGroup(),
                         visible: true,
-                        selectedForAnalysis: true
+                        selectedForAnalysis: true,
+                        id: 'file_' + Date.now() + '_' + idx
                     };
+
+                    // Generar ID único para control de visibilidad
+                    visibilidadArchivos[fileEntry.id] = true;
 
                     json.forEach(row => {
                         let lat = parseFloat(row.LATITUD || row.LAT || row.Latitud);
                         let lng = parseFloat(row.LONGITUD || row.LON || row.Longitud);
 
+                        let identificadorRaw = obtenerIdentificador(row);
+                    let suministro = normalizarSuministro(identificadorRaw);
+
                         if (isNaN(lat) || isNaN(lng) || lat === 0 || lng === 0) {
-                            let suministro = normalizarSuministro(row.SUMINISTRO || row['SUMINISTRO'] || row['N° SUMINISTRO'] || row['COD SUMINISTRO']);
                             if (suministro && matrizUbicaciones.has(suministro)) {
                                 const info = matrizUbicaciones.get(suministro);
                                 lat = info.lat;
@@ -474,7 +1114,6 @@
                             }
                         } else {
                             conUbicacionPropia++;
-                            let suministro = normalizarSuministro(row.SUMINISTRO || row['SUMINISTRO']);
                             if (suministro) {
                                 matrizUbicaciones.set(suministro, {lat, lng});
                             }
@@ -493,40 +1132,35 @@
 
                         const actividadRaw = (row.ACTIVIDAD || '').toString().trim().toUpperCase();
                         let tipo = 'PROYECTO';
-                        
-                        if (esVerEnCampo) {
-                            tipo = 'VERENCAMPO';
-                        } else if (actividadRaw === 'A1') {
-                            tipo = 'A1';
-                        } else if (actividadRaw === 'A2') {
-                            tipo = 'A2';
-                        } else if (actividadRaw === 'A3') {
-                            tipo = 'A3';
-                        } else if (actividadRaw === 'IMPOSIBILIDAD') {
-                            tipo = 'IMPOSIBILIDAD';
-                        }
+
+                        if (esVerEnCampo) tipo = 'VERENCAMPO';
+                        else if (actividadRaw === 'A1') tipo = 'A1';
+                        else if (actividadRaw === 'A2') tipo = 'A2';
+                        else if (actividadRaw === 'A3') tipo = 'A3';
+                        else if (actividadRaw === 'IMPOSIBILIDAD') tipo = 'IMPOSIBILIDAD';
 
                         const color = getColor(tipo);
                         var marker = crearMarcador(lat, lng, color);
-                        
+
                         marker.properties = { ...row, tipoFiltro: tipo, color: color, filename: file.name };
-
-                        const suministroMostrar = row.SUMINISTRO || row['SUMINISTRO'] || row['N° SUMINISTRO'] || row['COD SUMINISTRO'] || 'SIN SUMINISTRO';
-
-                        const popupSimple = `
-                            <div style="text-align:center; padding:4px;">
-                                <div style="width: 32px; height: 32px; background: #d32f2f; border: 3px solid white; border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.4); margin: 0 auto;"></div>
-                            </div>
-                        `;
-
-                        marker.bindPopup(popupSimple, { maxWidth: 60, closeButton: false });
+                        marker.uniqueId = normalizarSuministro(row.SUMINISTRO || row['SUMINISTRO'] || `${lat}_${lng}`);
+                        marker.fileId = fileEntry.id;
 
                         marker.on('click', function(e) {
+                            if (currentEditingGroup) {
+                                toggleMarkerInGroup(this, currentEditingGroup);
+                                return;
+                            }
+                            if (modoLasso) {
+                                toggleLassoMarker(this);
+                                return;
+                            }
                             if (modoClic) {
                                 toggleSeleccionMarker(this);
                             } else {
-                                mostrarDetallePunto(this.properties);
-                                map.openPopup(this.getPopup());
+                                resaltarMarcador(this);
+                                mostrarInfoPanel(this.properties);
+                                currentSelectedMarker = this;
                             }
                         });
 
@@ -535,73 +1169,152 @@
                         fileEntry.individualLayer.addLayer(marker);
                     });
 
-                    loadedFiles.push(fileEntry);
+                    if (esActualizacion && fileIndex !== null) {
+                        loadedFiles.splice(fileIndex, 0, fileEntry);
+                    } else {
+                        loadedFiles.push(fileEntry);
+                    }
+
                     actualizarDistritos();
                     aplicarFiltros();
                     actualizarBotonesAnalisis();
+                    actualizarLeyendaArchivos();
 
+                    // Agregar a la lista global de sin ubicación
+                    suministrosSinUbicacion = suministrosSinUbicacion.concat(sinUbicacionLista);
+
+                    // Mostrar reporte detallado
+                    mostrarReporteCarga(file.name, fileEntry.markers.length, conUbicacionPropia, 
+                                       ubicadosPorMatriz, sinUbicacionLista);
+
+                    /* Alerta básica reemplazada por reporte:
                     alert(`¡Listo! Cargados ${fileEntry.markers.length} puntos del archivo ${file.name}.\n` +
                           `Con ubicación propia: ${conUbicacionPropia}\n` +
                           `Ubicados con matriz: ${ubicadosPorMatriz}\n` +
                           `Sin ubicación encontrada: ${noUbicados}`);
+                    */
                 };
                 reader.readAsArrayBuffer(file);
             });
-            e.target.value = '';
-        });
+        }
 
-        function mostrarDetallePunto(props) {
-            const suministro = props.SUMINISTRO || props['SUMINISTRO'] || props['N° SUMINISTRO'] || props['COD SUMINISTRO'] || 'SIN SUMINISTRO';
-            const medidor = props.MEDIDOR || 'SIN MEDIDOR';
-            const actividad = props.ACTIVIDAD || 'SIN DATO';
-            const usuario = props.Usuario || '—';
-            const direccion = props.DIRECCION || '—';
-            const distrito = props.DISTRITO || '—';
-            const verCampo = tienePalabraCampo([
-                props['VER EN CAMPO'],
-                props['VER_EN_CAMPO'],
-                props['VERENCAMPO'],
-                props.ACTIVIDAD,
-                props.OBSERVACION,
-                props.NOTAS
-            ].join(' ')) ? 'SÍ' : 'NO';
+        function mostrarReporteCarga(nombreArchivo, totalCargados, conUbicacionPropia, ubicadosPorMatriz, sinUbicacionLista) {
+            const totalSinUbicacion = sinUbicacionLista.length;
+            const porcentajeExitoso = totalCargados > 0 ? ((totalCargados / (totalCargados + totalSinUbicacion)) * 100).toFixed(1) : 0;
 
-            document.getElementById('tituloSuministro').textContent = suministro;
-            document.getElementById('contenidoDetalle').innerHTML = `
-                <div class="dato"><span class="label">Medidor:</span> ${medidor}</div>
-                <div class="dato"><span class="label">Actividad:</span> ${actividad}</div>
-                <div class="dato"><span class="label">Usuario:</span> ${usuario}</div>
-                <div class="dato"><span class="label">Dirección:</span> ${direccion}</div>
-                <div class="dato"><span class="label">Distrito:</span> ${distrito}</div>
-                <div class="dato"><span class="label">Ver Campo:</span> ${verCampo}</div>
+            let html = `
+                <div style="text-align:center; margin-bottom:20px;">
+                    <h3 style="color:#1d4ed8; margin:0 0 10px 0;">📊 Reporte de Carga</h3>
+                    <div style="font-size:24px; font-weight:bold; color:#059669;">${totalCargados}</div>
+                    <div style="color:#666; font-size:14px;">Suministros ubicados en mapa</div>
+                </div>
+
+                <div style="background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:15px; margin-bottom:15px;">
+                    <div style="font-weight:bold; color:#166534; margin-bottom:8px;">✓ Ubicados Exitosamente</div>
+                    <div style="display:flex; justify-content:space-between; margin:5px 0;">
+                        <span>Con coordenadas propias:</span>
+                        <strong>${conUbicacionPropia}</strong>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin:5px 0;">
+                        <span>Ubicados por matriz:</span>
+                        <strong>${ubicadosPorMatriz}</strong>
+                    </div>
+                    <div style="border-top:1px solid #86efac; margin-top:8px; padding-top:8px; display:flex; justify-content:space-between; font-weight:bold;">
+                        <span>Total en mapa:</span>
+                        <span style="color:#059669;">${totalCargados}</span>
+                    </div>
+                </div>
             `;
 
-            document.getElementById('detallePunto').style.display = 'block';
-        }
+            if (totalSinUbicacion > 0) {
+                html += `
+                    <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:15px; margin-bottom:15px;">
+                        <div style="font-weight:bold; color:#991b1b; margin-bottom:8px;">⚠ Sin Ubicación (${totalSinUbicacion})</div>
+                        <div style="font-size:13px; color:#666; margin-bottom:10px;">
+                            Estos suministros no tienen coordenadas ni coinciden en la matriz de datos.
+                        </div>
 
-        function limpiarDetallePunto() {
-            document.getElementById('detallePunto').style.display = 'none';
-        }
+                        <div style="max-height:150px; overflow-y:auto; background:white; border:1px solid #e5e7eb; border-radius:4px; padding:8px; font-size:12px; margin-bottom:10px;">
+                            ${sinUbicacionLista.slice(0, 10).map(s => `
+                                <div style="padding:4px 0; border-bottom:1px solid #f3f4f6;">
+                                    <strong>${s.identificador}</strong> - ${s.actividad || 'Sin actividad'}
+                                    ${s.direccion ? `<br><small style="color:#6b7280;">${s.direccion}</small>` : ''}
+                                </div>
+                            `).join('')}
+                            ${sinUbicacionLista.length > 10 ? `<div style="text-align:center; color:#9ca3af; padding:8px;">... y ${sinUbicacionLista.length - 10} más</div>` : ''}
+                        </div>
 
-        function toggleModoClic() {
-            modoClic = !modoClic;
-            const btn = document.getElementById('btnSeleccionar');
-            if (modoClic) {
-                btn.classList.add('active');
-                map.getContainer().style.cursor = 'crosshair';
-                alert("Modo selección activado.");
+                        <button id="btn-descargar-sin-ubic" style="background:#dc2626; width:100%; margin:0; cursor: pointer;">
+                            <i class="fa fa-file-excel"></i> Descargar Listado Sin Ubicación (${totalSinUbicacion})
+                        </button>
+                    </div>
+                `;
             } else {
-                btn.classList.remove('active');
-                map.getContainer().style.cursor = 'grab';
-                limpiarDetallePunto();
+                html += `
+                    <div style="background:#dbeafe; border:1px solid #93c5fd; border-radius:8px; padding:15px; text-align:center;">
+                        <div style="font-size:24px; margin-bottom:5px;">🎉</div>
+                        <div style="font-weight:bold; color:#1e40af;">¡Todos los suministros tienen ubicación!</div>
+                    </div>
+                `;
             }
-            aplicarFiltros();
+
+            html += `
+                <div style="margin-top:15px; text-align:center; font-size:12px; color:#6b7280;">
+                    Archivo: <strong>${nombreArchivo}</strong> | Tasa de éxito: ${porcentajeExitoso}%
+                </div>
+            `;
+
+            document.getElementById('agrupamientoContenido').innerHTML = html;
+            document.getElementById('agrupamientoModal').style.display = 'flex';
+
+            // Agregar event listener al botón de descarga después de renderizar
+            setTimeout(() => {
+                const btn = document.getElementById('btn-descargar-sin-ubic');
+                if (btn) {
+                    btn.onclick = function() {
+                        descargarSinUbicacion();
+                    };
+                }
+            }, 100);
         }
 
-        function limpiarSeleccion() {
-            selectedMarkers = [];
-            limpiarDetallePunto();
-            aplicarFiltros();
+        function descargarSinUbicacion() {
+            if (suministrosSinUbicacion.length === 0) {
+                alert("No hay suministros sin ubicación para descargar");
+                return;
+            }
+
+            const data = suministrosSinUbicacion.map(s => {
+                // Crear objeto con todos los datos excepto coordenadas
+                let row = {
+                    SUMINISTRO_ID: s.identificador,
+                    SUMINISTRO_NORMALIZADO: s.suministroNormalizado,
+                    ACTIVIDAD: s.actividad,
+                    MEDIDOR: s.medidor,
+                    DIRECCION: s.direccion,
+                    DISTRITO: s.distrito,
+                    OBSERVACION: s.observacion,
+                    ARCHIVO_ORIGEN: s.archivo,
+                    MOTIVO: 'Sin coordenadas (LAT/LON) y sin coincidencia en matriz data.json'
+                };
+
+                // Agregar todos los demás campos del objeto original excepto coordenadas
+                if (s.filaDatos) {
+                    for (let key in s.filaDatos) {
+                        if (/^(LAT|LON|lat|lon|Latitud|Longitud|latitude|longitude|COORD|coord)/i.test(key)) continue;
+                        if (!row.hasOwnProperty(key) && s.filaDatos[key] !== undefined && s.filaDatos[key] !== null) {
+                            row[key] = s.filaDatos[key];
+                        }
+                    }
+                }
+
+                return row;
+            });
+
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Sin Ubicacion");
+            XLSX.writeFile(wb, `suministros_sin_ubicacion_${new Date().toISOString().slice(0,10)}.xlsx`);
         }
 
         function actualizarDistritos() {
@@ -613,7 +1326,7 @@
             });
             const distritos = [...allDistritos].sort();
             const selectDist = document.getElementById('distritoFilter');
-            selectDist.innerHTML = '<option value="">Selecciona distrito</option><option value="TODOS">TODOS</option>';
+            selectDist.innerHTML = '<option value="">Selecciona distrito</option><option value="TODOS">TODOS DISTRITOS</option>';
             distritos.forEach(d => {
                 let opt = document.createElement('option');
                 opt.value = d; opt.text = d;
@@ -621,44 +1334,99 @@
             });
         }
 
-        function getAllVisibleMarkers() {
-            let markers = [];
-            loadedFiles.forEach(file => {
-                if (file.visible) markers = markers.concat(file.markers);
-            });
-            return markers;
-        }
-
-        function getSelectedVisibleMarkers() {
-            let markers = [];
-            loadedFiles.forEach(file => {
-                if (file.visible && file.selectedForAnalysis) {
-                    markers = markers.concat(file.markers);
-                }
-            });
-            return markers;
-        }
-
-        function actualizarConteos() {
-            const markers = getSelectedVisibleMarkers();
-            const c = { A1:0, A2:0, A3:0, IMPOSIBILIDAD:0, PROYECTO:0, VERENCAMPO:0, total: markers.length };
-            markers.forEach(m => {
-                if (c.hasOwnProperty(m.properties.tipoFiltro)) c[m.properties.tipoFiltro]++;
-            });
-            document.getElementById('modalCountA1').textContent = c.A1;
-            document.getElementById('modalCountA2').textContent = c.A2;
-            document.getElementById('modalCountA3').textContent = c.A3;
-            document.getElementById('modalCountIMP').textContent = c.IMPOSIBILIDAD;
-            document.getElementById('modalCountPROY').textContent = c.PROYECTO;
-            document.getElementById('modalCountVERCAMPO').textContent = c.VERENCAMPO;
-            document.getElementById('modalCountTotal').textContent = c.total;
-            document.getElementById('modalSelectionCount').textContent = selectedMarkers.length;
-        }
-
         function actualizarBotonesAnalisis() {
             const tieneArchivosSeleccionados = loadedFiles.some(f => f.visible && f.selectedForAnalysis);
             document.getElementById('btnConteo').disabled = !tieneArchivosSeleccionados;
             document.getElementById('btnReporte').disabled = !tieneArchivosSeleccionados;
+        }
+
+        // NUEVA FUNCIÓN: Actualizar leyenda de archivos
+        function actualizarLeyendaArchivos() {
+            const container = document.getElementById('archivosLeyenda');
+            const content = document.getElementById('archivosLeyendaContent');
+
+            if (loadedFiles.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+
+            container.style.display = 'block';
+            content.innerHTML = '';
+
+            loadedFiles.forEach((file, index) => {
+                const isVisible = visibilidadArchivos[file.id] !== false;
+                const disabledClass = isVisible ? '' : 'disabled';
+                const opacityStyle = isVisible ? '' : 'opacity:0.4;';
+                const textDecoration = isVisible ? '' : 'text-decoration: line-through;';
+                const colorStyle = isVisible ? 'background:#666;' : 'background:#ccc !important;';
+
+                content.innerHTML += `
+                    <div class="leyenda-item ${disabledClass}" id="leyenda-archivo-${file.id}" onclick="toggleArchivoVisibilidad('${file.id}')" style="cursor: pointer; ${opacityStyle}">
+                        <div class="leyenda-color" style="${colorStyle}"></div>
+                        <span style="${textDecoration}" title="${file.filename}">${file.filename.substring(0, 18)}${file.filename.length > 18 ? '...' : ''} (${file.markers.length})</span>
+                    </div>
+                `;
+            });
+        }
+
+        function toggleArchivoVisibilidad(fileId) {
+            visibilidadArchivos[fileId] = !visibilidadArchivos[fileId];
+            // No llamar a actualizarLeyendaArchivos aquí para evitar recursión, 
+            // solo aplicar estilos directamente
+            const items = document.querySelectorAll('#archivosLeyendaContent .leyenda-item');
+            items.forEach(item => {
+                // El onclick ya está asignado, solo actualizamos clases si es necesario
+            });
+            aplicarFiltros();
+        }
+
+        // NUEVA FUNCIÓN: Toggle visibilidad desde leyenda
+        // Variables para control de visibilidad de grupos y archivos en leyenda
+        var visibilidadGrupos = {};
+
+        function toggleTipoVisibilidad(tipo) {
+            // Manejar clic en leyenda de JSON de referencia
+            if (tipo === 'JSON-REF') {
+                toggleJsonReferencia();
+                return;
+            }
+            visibilidad[tipo] = !visibilidad[tipo];
+
+            // Actualizar apariencia de la leyenda
+            const item = document.getElementById(`leyenda-${tipo}`);
+            if (visibilidad[tipo]) {
+                item.classList.remove('disabled');
+            } else {
+                item.classList.add('disabled');
+            }
+
+            aplicarFiltros();
+        }
+
+        function toggleGrupoVisibilidad(groupId) {
+            if (!editableGroups[groupId]) return;
+
+            // Toggle estado
+            visibilidadGrupos[groupId] = visibilidadGrupos[groupId] !== false;
+            visibilidadGrupos[groupId] = !visibilidadGrupos[groupId];
+
+            // Actualizar apariencia visual en leyenda
+            const item = document.getElementById(`leyenda-grupo-${groupId}`);
+            if (visibilidadGrupos[groupId]) {
+                item.classList.remove('disabled');
+                item.style.opacity = '1';
+            } else {
+                item.classList.add('disabled');
+                item.style.opacity = '0.4';
+            }
+
+            // Aplicar filtro de visualización
+            aplicarFiltros();
+        }
+
+        // Inicializar visibilidad de grupo cuando se crea
+        function inicializarVisibilidadGrupo(groupId) {
+            visibilidadGrupos[groupId] = true;
         }
 
         function abrirGestionArchivos() {
@@ -668,17 +1436,21 @@
             loadedFiles.forEach((file, index) => {
                 const visChecked = file.visible ? 'checked' : '';
                 html += `
-                    <div style="display:flex; justify-content:space-between; align-items:center; padding:8px; background:#f1f5f9; margin:6px 0; border-radius:6px; border:1px solid #e2e8f0; font-size:12px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#f1f5f9; margin:8px 0; border-radius:8px; border:1px solid #e2e8f0;">
                         <div style="flex:1;">
                             <strong>${file.filename}</strong><br>
-                            <small>${file.markers.length} pts</small>
+                            <small>${file.markers.length} puntos</small>
                         </div>
-                        <div style="display:flex; gap:8px;">
-                            <label title="Visible / Analizar">
-                                <input type="checkbox" class="file-vis" data-index="${index}" ${visChecked}>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <label title="Visible en mapa" style="display:flex; align-items:center; gap:4px; cursor:pointer;">
+                                <input type="checkbox" class="file-vis" data-index="${index}" ${visChecked} onchange="toggleArchivoVisibilidad('${file.id}')"> 
+                                <span style="font-size:12px;">Ver</span>
                             </label>
-                            <button class="danger" style="width:auto; height:20px; padding:0 6px; font-size:10px;" 
-                                    onclick="eliminarArchivo(${index})">X</button>
+                            <button class="btn-refresh" title="Actualizar archivo" onclick="actualizarArchivo(${index})">
+                                <i class="fa fa-refresh"></i>
+                            </button>
+                            <button class="danger" style="width:auto; height:28px; padding:0 12px; font-size:13px;" 
+                                    onclick="eliminarArchivo(${index})">Eliminar</button>
                         </div>
                     </div>
                 `;
@@ -688,17 +1460,36 @@
             document.getElementById('gestionArchivosModal').style.display = 'flex';
         }
 
+        // NUEVA FUNCIÓN: Actualizar archivo existente
+        function actualizarArchivo(index) {
+            const fileName = loadedFiles[index].filename;
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.xlsx';
+            input.onchange = function(e) {
+                if (e.target.files.length > 0) {
+                    if (confirm(`¿Actualizar "${fileName}" con "${e.target.files[0].name}"?\n\nSe reemplazarán todos los datos.`)) {
+                        procesarArchivos(e.target.files, true, index);
+                    }
+                }
+            };
+            input.click();
+        }
+
         function eliminarArchivo(index) {
-            if (!confirm(`¿Eliminar "${loadedFiles[index].filename}"?`)) return;
+            if (!confirm(`¿Eliminar "${loadedFiles[index].filename}" permanentemente?`)) return;
 
             const file = loadedFiles[index];
             if (map.hasLayer(file.clusterGroup)) map.removeLayer(file.clusterGroup);
             if (map.hasLayer(file.individualLayer)) map.removeLayer(file.individualLayer);
 
+            delete visibilidadArchivos[file.id];
+
             loadedFiles.splice(index, 1);
             actualizarDistritos();
             aplicarFiltros();
             actualizarBotonesAnalisis();
+            actualizarLeyendaArchivos();
             abrirGestionArchivos();
         }
 
@@ -728,7 +1519,7 @@
             });
 
             if (datos.length === 0) {
-                alert('No hay archivos seleccionados.');
+                alert('No hay archivos seleccionados para análisis.');
                 return;
             }
 
@@ -751,7 +1542,7 @@
 
                 let tipo = 'PROYECTO';
                 const act = (row.ACTIVIDAD || '').toString().trim().toUpperCase();
-                
+
                 if (esVerEnCampo) {
                     tipo = 'VERENCAMPO';
                 } else if (act === 'A1') {
@@ -770,12 +1561,12 @@
                 totales.total++;
             });
 
-            let html = '<table style="width:100%; border-collapse:collapse; font-size:12px;"><tr><th>Distrito</th><th>A1</th><th>A2</th><th>A3</th><th>Imp</th><th>Proy</th><th>Campo</th><th>Total</th></tr>';
+            let html = '<table style="width:100%; border-collapse:collapse;"><tr><th>Distrito</th><th>A1</th><th>A2</th><th>A3</th><th>Impos.</th><th>Proy.</th><th>Ver Campo</th><th>Total</th></tr>';
             Object.keys(porDistrito).sort().forEach(dist => {
                 const d = porDistrito[dist];
                 html += `<tr><td>${dist}</td><td>${d.A1}</td><td>${d.A2}</td><td>${d.A3}</td><td>${d.IMPOSIBILIDAD}</td><td>${d.PROYECTO}</td><td>${d.VERENCAMPO}</td><td>${d.total}</td></tr>`;
             });
-            html += `<tr style="font-weight:bold; background:#f0f0f0;"><td>TOTAL</td><td>${totales.A1}</td><td>${totales.A2}</td><td>${totales.A3}</td><td>${totales.IMPOSIBILIDAD}</td><td>${totales.PROYECTO}</td><td>${totales.VERENCAMPO}</td><td>${totales.total}</td></tr></table>`;
+            html += `<tr style="font-weight:bold; background:#f0f0f0;"><td><strong>TOTAL GENERAL</strong></td><td><strong>${totales.A1}</strong></td><td><strong>${totales.A2}</strong></td><td><strong>${totales.A3}</strong></td><td><strong>${totales.IMPOSIBILIDAD}</strong></td><td><strong>${totales.PROYECTO}</strong></td><td><strong>${totales.VERENCAMPO}</strong></td><td><strong>${totales.total}</strong></td></tr></table>`;
 
             document.getElementById('reporteContenido').innerHTML = html;
             document.getElementById('reporteModal').style.display = 'flex';
@@ -788,10 +1579,10 @@
             }
 
             const doc = new jsPDF('p', 'mm', 'a4');
-            doc.setFontSize(14);
-            doc.text("Puntos Seleccionados", 20, 20);
-            doc.setFontSize(10);
-            doc.text(`Total: ${selectedMarkers.length} | ${new Date().toLocaleDateString('es-PE')}`, 20, 28);
+            doc.setFontSize(16);
+            doc.text("Reporte de Puntos Seleccionados - Agua Potable", 20, 20);
+            doc.setFontSize(12);
+            doc.text(`Total: ${selectedMarkers.length} puntos | Fecha: ${new Date().toLocaleDateString('es-PE')}`, 20, 30);
 
             const headers = [["N°", "SUMINISTRO", "Tipo", "Medidor", "Dirección", "Distrito"]];
             const data = selectedMarkers.map((p, i) => [
@@ -806,20 +1597,20 @@
             doc.autoTable({
                 head: headers,
                 body: data,
-                startY: 35,
+                startY: 40,
                 theme: 'grid',
-                headStyles: { fillColor: [29, 78, 216], fontSize: 10 },
+                headStyles: { fillColor: [29, 78, 216] },
                 columnStyles: {
-                    0: { cellWidth: 8 },
-                    1: { cellWidth: 35 },
-                    2: { cellWidth: 15 },
-                    3: { cellWidth: 30 },
-                    4: { cellWidth: 50 },
-                    5: { cellWidth: 25 }
+                    0: { cellWidth: 10 },
+                    1: { cellWidth: 40 },
+                    2: { cellWidth: 20 },
+                    3: { cellWidth: 40 },
+                    4: { cellWidth: 60 },
+                    5: { cellWidth: 30 }
                 }
             });
 
-            doc.save("seleccionados.pdf");
+            doc.save("reporte_seleccionados_sin_ubicacion.pdf");
         }
 
         function exportarSeleccionExcel() {
@@ -830,18 +1621,20 @@
 
             const data = selectedMarkers.map(p => ({
                 SUMINISTRO: p.SUMINISTRO || p['SUMINISTRO'] || p['N° SUMINISTRO'] || p['COD SUMINISTRO'] || 'SIN SUMINISTRO',
-                Tipo: p.tipoFiltro || '—',
-                Medidor: p.MEDIDOR || 'SIN MEDIDOR',
-                Direccion: p.DIRECCION || '',
-                Distrito: p.DISTRITO || '',
-                Actividad: p.ACTIVIDAD || 'SIN DATO',
-                Usuario: p.Usuario || '—'
+                ACTIVIDAD: p.ACTIVIDAD || 'SIN DATO',
+                MEDIDOR: p.MEDIDOR || 'SIN MEDIDOR',
+                USUARIO: p.Usuario || p.USUARIO || '—',
+                DIRECCION: p.DIRECCION || '',
+                DISTRITO: p.DISTRITO || '',
+                TIPO: p.tipoFiltro || '—',
+                OBSERVACION: p.OBSERVACION || '',
+                NOTAS: p.NOTAS || ''
             }));
 
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "Seleccionados");
-            XLSX.writeFile(wb, "seleccionados.xlsx");
+            XLSX.utils.book_append_sheet(wb, ws, "Seleccion Completa");
+            XLSX.writeFile(wb, "seleccion_completa_sin_ubicacion.xlsx");
         }
 
         function aplicarFiltros() {
@@ -851,7 +1644,7 @@
                 file.clusterGroup.clearLayers();
                 file.individualLayer.clearLayers();
 
-                if (!file.visible) return;
+                if (!file.visible || !visibilidadArchivos[file.id]) return;
 
                 const distrito = document.getElementById('distritoFilter').value;
 
@@ -859,22 +1652,63 @@
                     if (distrito !== '' && distrito !== 'TODOS' && m.properties.DISTRITO !== distrito) return;
                     if (!visibilidad[m.properties.tipoFiltro]) return;
 
-                    const marker = crearMarcador(m.getLatLng().lat, m.getLatLng().lng, m.properties.color);
+                    // Verificar si pertenece a un grupo editable y si el grupo es visible
+                    let color = m.properties.color;
+                    let enGrupo = false;
+                    let grupoVisible = true;
+                    for (let gid in editableGroups) {
+                        if (editableGroups[gid].suministros.includes(m.uniqueId)) {
+                            // Verificar si el grupo está visible en la leyenda
+                            if (visibilidadGrupos[gid] === false) {
+                                grupoVisible = false;
+                            }
+                            color = editableGroups[gid].color;
+                            enGrupo = true;
+                            break;
+                        }
+                    }
+
+                    // Si el grupo no es visible, no mostrar este punto (a menos que se quiera ver solo por tipo)
+                    if (enGrupo && !grupoVisible) {
+                        return; // No agregar este marcador
+                    }
+
+                    const marker = crearMarcador(m.getLatLng().lat, m.getLatLng().lng, color);
                     marker.properties = m.properties;
-                    marker.bindPopup(m._popup._content);
-                    marker.on('click', e => modoClic ? toggleSeleccionMarker(marker) : mostrarDetallePunto(m.properties));
+                    marker.uniqueId = m.uniqueId;
+                    marker.fileId = m.fileId;
+                    marker.sourceMarker = m;
+
+                    marker.on('click', function(e) {
+                        if (currentEditingGroup) {
+                            toggleMarkerInGroup(this, currentEditingGroup);
+                            return;
+                        }
+                        if (modoLasso) {
+                            toggleLassoMarker(this);
+                            return;
+                        }
+                        if (modoClic) {
+                            toggleSeleccionMarker(this);
+                        } else {
+                            resaltarMarcador(this);
+                            mostrarInfoPanel(this.properties);
+                            currentSelectedMarker = this;
+                        }
+                    });
 
                     file.clusterGroup.addLayer(marker);
                     file.individualLayer.addLayer(marker);
                 });
             });
             controlarVistaPorZoom();
+            actualizarLeyendaGrupos();
         }
 
         function controlarVistaPorZoom() {
             const zoom = map.getZoom();
             loadedFiles.forEach(file => {
-                if (!file.visible) return;
+                if (!file.visible || !visibilidadArchivos[file.id]) return;
                 if (zoom >= 16) {
                     map.removeLayer(file.clusterGroup);
                     map.addLayer(file.individualLayer);
@@ -885,17 +1719,81 @@
             });
         }
 
+        function toggleModoClic() {
+            modoClic = !modoClic;
+            map.getContainer().style.cursor = modoClic ? 'crosshair' : 'grab';
+            document.getElementById('btnSeleccionar').classList.toggle('active', modoClic);
+            if (modoClic) {
+                alert("Modo selección activado. Haz clic en los puntos para seleccionarlos.");
+                cerrarPanelInfo();
+            }
+            aplicarFiltros();
+        }
+
         function toggleSeleccionMarker(marker) {
             const props = marker.properties;
-            const key = props.SUMINISTRO || `${props.LATITUD}_${props.LONGITUD}`;
-            const index = selectedMarkers.findIndex(s => (s.SUMINISTRO || `${s.LATITUD}_${s.LONGITUD}`) === key);
+            const key = props.ID || props.SUMINISTRO || `${props.LATITUD || 'lat'}_${props.LONGITUD || 'lng'}`;
+
+            const index = selectedMarkers.findIndex(s => {
+                const sKey = s.ID || s.SUMINISTRO || `${s.LATITUD || 'lat'}_${s.LONGITUD || 'lng'}`;
+                return sKey === key;
+            });
+
             if (index === -1) {
                 selectedMarkers.push(props);
-                marker.setStyle({fillColor: '#00ff00', radius: 9});
+
+                if (!marker.options.originalStyle) {
+                    marker.options.originalStyle = { ...marker.options };
+                }
+
+                marker.setStyle({
+                    fillColor: '#22c55e',
+                    color: '#14532d',
+                    weight: 6,
+                    radius: 12,
+                    className: 'resaltado-clic'
+                });
             } else {
                 selectedMarkers.splice(index, 1);
-                marker.setStyle({fillColor: props.color, radius: 6});
+
+                if (marker.options.originalStyle) {
+                    marker.setStyle(marker.options.originalStyle);
+                } else {
+                    marker.setStyle({
+                        fillColor: props.color || '#888',
+                        color: '#000',
+                        weight: 1,
+                        radius: 6,
+                        className: ''
+                    });
+                }
             }
+
+            actualizarConteos();
+        }
+
+        function limpiarSeleccion() {
+            selectedMarkers = [];
+
+            loadedFiles.forEach(file => {
+                if (!file.visible) return;
+                file.clusterGroup.eachLayer(marker => {
+                    if (marker.options.originalStyle) {
+                        marker.setStyle(marker.options.originalStyle);
+                    } else {
+                        marker.setStyle({
+                            fillColor: marker.properties.color,
+                            color: '#000',
+                            weight: 1,
+                            radius: 6,
+                            className: ''
+                        });
+                    }
+                });
+            });
+
+            aplicarFiltros();
+            actualizarConteos();
         }
 
         function cerrarModal(id) {
@@ -908,30 +1806,1042 @@
             }
         };
 
-        function abrirFiltroVisibilidad() {
-            document.getElementById('visA1').checked = visibilidad.A1;
-            document.getElementById('visA2').checked = visibilidad.A2;
-            document.getElementById('visA3').checked = visibilidad.A3;
-            document.getElementById('visIMP').checked = visibilidad.IMPOSIBILIDAD;
-            document.getElementById('visProyecto').checked = visibilidad.PROYECTO;
-            document.getElementById('visVERENCAMPO').checked = visibilidad.VERENCAMPO;
-            document.getElementById('filtroModal').style.display = 'flex';
-        }
-
-        function aplicarFiltroVisibilidad() {
-            visibilidad.A1 = document.getElementById('visA1').checked;
-            visibilidad.A2 = document.getElementById('visA2').checked;
-            visibilidad.A3 = document.getElementById('visA3').checked;
-            visibilidad.IMPOSIBILIDAD = document.getElementById('visIMP').checked;
-            visibilidad.PROYECTO = document.getElementById('visProyecto').checked;
-            visibilidad.VERENCAMPO = document.getElementById('visVERENCAMPO').checked;
-            cerrarModal('filtroModal');
-            aplicarFiltros();
-        }
-
         map.on('zoomend', controlarVistaPorZoom);
         document.getElementById('distritoFilter').addEventListener('change', aplicarFiltros);
 
-    </script>
+        function actualizarConteos() {
+            const markers = getSelectedVisibleMarkers();
+            const c = { A1:0, A2:0, A3:0, IMPOSIBILIDAD:0, PROYECTO:0, VERENCAMPO:0, total: markers.length };
+            markers.forEach(m => {
+                if (c.hasOwnProperty(m.properties.tipoFiltro)) c[m.properties.tipoFiltro]++;
+            });
+            document.getElementById('modalCountA1').textContent = c.A1;
+            document.getElementById('modalCountA2').textContent = c.A2;
+            document.getElementById('modalCountA3').textContent = c.A3;
+            document.getElementById('modalCountIMP').textContent = c.IMPOSIBILIDAD;
+            document.getElementById('modalCountPROY').textContent = c.PROYECTO;
+            document.getElementById('modalCountVERCAMPO').textContent = c.VERENCAMPO;
+            document.getElementById('modalCountTotal').textContent = c.total;
+            document.getElementById('modalSelectionCount').textContent = selectedMarkers.length;
+        }
+
+        function getSelectedVisibleMarkers() {
+            let markers = [];
+            loadedFiles.forEach(file => {
+                if (file.visible && file.selectedForAnalysis && visibilidadArchivos[file.id]) {
+                    markers = markers.concat(file.markers);
+                }
+            });
+            return markers;
+        }
+
+        // ==========================================
+        // FUNCIONES DE GRUPOS MEJORADAS
+        // ==========================================
+
+        function toggleModoLasso() {
+            modoLasso = !modoLasso;
+            const btn = document.getElementById('btnLasso');
+            const panel = document.getElementById('counterPanel');
+
+            if (modoLasso) {
+                btn.innerHTML = '<i class="fa fa-stop"></i> Terminar Selección';
+                btn.classList.remove('warning');
+                btn.classList.add('danger');
+                map.getContainer().style.cursor = 'crosshair';
+                iniciarLasso();
+                panel.classList.add('visible');
+                actualizarContadorLasso();
+            } else {
+                btn.innerHTML = '<i class="fa fa-object-group"></i> Selección a Mano Alzada';
+                btn.classList.remove('danger');
+                btn.classList.add('warning');
+                map.getContainer().style.cursor = 'grab';
+                detenerLasso();
+                // CERRAR PANEL AL TERMINAR
+                panel.classList.remove('visible');
+            }
+        }
+
+        function iniciarLasso() {
+            map.dragging.disable();
+            map.on('mousedown', onLassoMouseDown);
+        }
+
+        function detenerLasso() {
+            map.dragging.enable();
+            map.off('mousedown', onLassoMouseDown);
+            map.off('mousemove', onLassoMouseMove);
+            map.off('mouseup', onLassoMouseUp);
+            document.getElementById('selectionBox').style.display = 'none';
+        }
+
+        function onLassoMouseDown(e) {
+            lassoStart = e.containerPoint;
+            const box = document.getElementById('selectionBox');
+            box.style.left = e.containerPoint.x + 'px';
+            box.style.top = e.containerPoint.y + 'px';
+            box.style.width = '0px';
+            box.style.height = '0px';
+            box.style.display = 'block';
+
+            map.on('mousemove', onLassoMouseMove);
+            map.on('mouseup', onLassoMouseUp);
+        }
+
+        function onLassoMouseMove(e) {
+            if (!lassoStart) return;
+            const box = document.getElementById('selectionBox');
+            const start = lassoStart;
+            const current = e.containerPoint;
+
+            const left = Math.min(start.x, current.x);
+            const top = Math.min(start.y, current.y);
+            const width = Math.abs(current.x - start.x);
+            const height = Math.abs(current.y - start.y);
+
+            box.style.left = left + 'px';
+            box.style.top = top + 'px';
+            box.style.width = width + 'px';
+            box.style.height = height + 'px';
+        }
+
+        function onLassoMouseUp(e) {
+            const box = document.getElementById('selectionBox');
+            const rect = box.getBoundingClientRect();
+            const mapRect = map.getContainer().getBoundingClientRect();
+
+            const bounds = L.latLngBounds(
+                map.containerPointToLatLng([rect.left - mapRect.left, rect.top - mapRect.top]),
+                map.containerPointToLatLng([rect.right - mapRect.left, rect.bottom - mapRect.top])
+            );
+
+            seleccionarEnBounds(bounds);
+            box.style.display = 'none';
+            lassoStart = null;
+            map.off('mousemove', onLassoMouseMove);
+            map.off('mouseup', onLassoMouseUp);
+        }
+
+        function seleccionarEnBounds(bounds) {
+            loadedFiles.forEach(file => {
+                if (!file.visible || !visibilidadArchivos[file.id]) return;
+                file.individualLayer.eachLayer(layer => {
+                    if (bounds.contains(layer.getLatLng())) {
+                        agregarALasso(layer);
+                    }
+                });
+            });
+            actualizarContadorLasso();
+        }
+
+        function agregarALasso(marker) {
+            if (!lassoMarkers.find(m => m.uniqueId === marker.uniqueId)) {
+                lassoMarkers.push(marker);
+                marker.setStyle({
+                    fillColor: '#22c55e',
+                    color: '#14532d',
+                    weight: 3,
+                    radius: 10
+                });
+            }
+        }
+
+        function toggleLassoMarker(marker) {
+            const index = lassoMarkers.findIndex(m => m.uniqueId === marker.uniqueId);
+            if (index === -1) {
+                lassoMarkers.push(marker);
+                marker.setStyle({
+                    fillColor: '#22c55e',
+                    color: '#14532d',
+                    weight: 3,
+                    radius: 10
+                });
+            } else {
+                lassoMarkers.splice(index, 1);
+                // Restaurar color según grupo o tipo
+                let color = marker.properties.color;
+                for (let gid in editableGroups) {
+                    if (editableGroups[gid].suministros.includes(marker.uniqueId)) {
+                        color = editableGroups[gid].color;
+                        break;
+                    }
+                }
+                marker.setStyle({
+                    fillColor: color,
+                    color: '#000',
+                    weight: 1,
+                    radius: 6
+                });
+            }
+            actualizarContadorLasso();
+        }
+
+        function actualizarContadorLasso() {
+            document.getElementById('contadorNumero').textContent = lassoMarkers.length;
+        }
+
+        function cerrarSeleccionLasso() {
+            // Ocultar panel
+            document.getElementById('counterPanel').classList.remove('visible');
+            // Limpiar selección
+            limpiarSeleccionLasso();
+            // Desactivar modo lasso si está activo
+            if (modoLasso) {
+                toggleModoLasso();
+            }
+        }
+
+        function limpiarSeleccionLasso() {
+            lassoMarkers.forEach(marker => {
+                let color = marker.properties.color;
+                for (let gid in editableGroups) {
+                    if (editableGroups[gid].suministros.includes(marker.uniqueId)) {
+                        color = editableGroups[gid].color;
+                        break;
+                    }
+                }
+                marker.setStyle({
+                    fillColor: color,
+                    color: '#000',
+                    weight: 1,
+                    radius: 6
+                });
+            });
+            lassoMarkers = [];
+            actualizarContadorLasso();
+        }
+
+        // CREAR GRUPO CON VALIDACIÓN DE DUPLICADOS
+        function crearGrupoDesdeSeleccion() {
+            if (lassoMarkers.length === 0) {
+                alert("No hay puntos seleccionados");
+                return;
+            }
+
+            // Verificar si algún punto ya está en otro grupo
+            const yaEnGrupos = [];
+            const disponibles = [];
+
+            lassoMarkers.forEach(m => {
+                let enGrupo = null;
+                for (let gid in editableGroups) {
+                    if (editableGroups[gid].suministros.includes(m.uniqueId)) {
+                        enGrupo = editableGroups[gid].name;
+                        break;
+                    }
+                }
+                if (enGrupo) {
+                    yaEnGrupos.push({marker: m, grupo: enGrupo});
+                } else {
+                    disponibles.push(m);
+                }
+            });
+
+            let mensaje = ``;
+            if (yaEnGrupos.length > 0) {
+                mensaje += `${yaEnGrupos.length} puntos ya pertenecen a otros grupos y serán ignorados.\n`;
+            }
+            if (disponibles.length === 0) {
+                alert("Todos los puntos seleccionados ya pertenecen a otros grupos. No se puede crear el grupo.");
+                return;
+            }
+
+            mensaje += `\nSe creará el grupo con ${disponibles.length} puntos disponibles.\n¿Continuar?`;
+
+            if (!confirm(mensaje)) return;
+
+            const nombre = prompt("Nombre del nuevo grupo:", `Grupo ${groupIdCounter}`);
+            if (!nombre) return;
+
+            const id = `grp_${groupIdCounter++}`;
+            const color = getClusterColor(Object.keys(editableGroups).length);
+
+            const suministros = disponibles.map(m => m.uniqueId);
+            const props = disponibles.map(m => m.properties);
+
+            editableGroups[id] = {
+                id: id,
+                name: nombre,
+                color: color,
+                suministros: suministros,
+                properties: props,
+                markers: [...disponibles]
+            };
+
+            // Inicializar visibilidad para la leyenda
+            inicializarVisibilidadGrupo(id);
+
+            // Aplicar color del grupo
+            disponibles.forEach(m => {
+                m.setStyle({
+                    fillColor: color,
+                    weight: 2,
+                    radius: 8
+                });
+            });
+
+            limpiarSeleccionLasso();
+            // Ocultar panel de selección y desactivar modo
+            document.getElementById('counterPanel').classList.remove('visible');
+            modoLasso = false;
+            document.getElementById('btnLasso').innerHTML = '<i class="fa fa-object-group"></i> Selección a Mano Alzada';
+            document.getElementById('btnLasso').classList.remove('danger');
+            document.getElementById('btnLasso').classList.add('warning');
+            map.getContainer().style.cursor = 'grab';
+            detenerLasso();
+
+            mostrarPanelGrupos();
+            actualizarLeyendaGrupos();
+            aplicarFiltros();
+
+            alert(`Grupo "${nombre}" creado con ${suministros.length} puntos`);
+        }
+
+        // PANEL DE GRUPOS SIEMPRE VISIBLE
+        function mostrarPanelGrupos() {
+            const panel = document.getElementById('grupos-control-panel');
+            const lista = document.getElementById('grupos-activos-lista');
+
+            if (Object.keys(editableGroups).length === 0) {
+                panel.classList.remove('visible');
+                return;
+            }
+
+            panel.classList.add('visible');
+            lista.innerHTML = '';
+
+            for (let gid in editableGroups) {
+                const g = editableGroups[gid];
+                const div = document.createElement('div');
+                div.className = `grupo-activo-item ${currentEditingGroup === gid ? 'editing' : ''}`;
+                div.innerHTML = `
+                    <div class="grupo-activo-header">
+                        <div class="grupo-color-dot" style="background:${g.color};"></div>
+                        <strong style="flex:1; font-size:14px;">${g.name}</strong>
+                        <span style="font-size:12px; color:#666;">${g.suministros.length} pts</span>
+                    </div>
+                    <div style="display:flex; gap:4px;">
+                        <button onclick="toggleEditGroupPanel('${gid}')" class="btn-accion ${currentEditingGroup === gid ? 'success' : 'warning'}" style="flex:1;">
+                            <i class="fa fa-${currentEditingGroup === gid ? 'check' : 'edit'}"></i> 
+                            ${currentEditingGroup === gid ? 'Terminar' : 'Editar'}
+                        </button>
+                        <button onclick="eliminarGrupo('${gid}')" class="btn-accion danger" style="width:auto; padding:0 8px;">
+                            <i class="fa fa-trash"></i>
+                        </button>
+                    </div>
+                    ${currentEditingGroup === gid ? `
+                        <div style="margin-top:8px; padding:8px; background:#fffbeb; border-radius:4px; font-size:12px; color:#92400e;">
+                            <i class="fa fa-hand-pointer"></i> Clic en puntos del mapa para agregar/quitar
+                        </div>
+                    ` : ''}
+                `;
+                lista.appendChild(div);
+            }
+        }
+
+        function toggleEditGroupPanel(gid) {
+            if (currentEditingGroup === gid) {
+                currentEditingGroup = null;
+            } else {
+                currentEditingGroup = gid;
+                alert(`Modo edición activado para "${editableGroups[gid].name}".\nClic en puntos del mapa para agregarlos o quitarlos.`);
+            }
+            mostrarPanelGrupos();
+        }
+
+        function finalizarEdicionTodos() {
+            currentEditingGroup = null;
+            document.getElementById('grupos-control-panel').classList.remove('visible');
+        }
+
+        function abrirGestionGrupos() {
+            mostrarPanelGrupos();
+            const container = document.getElementById('listaGruposEdicion');
+            container.innerHTML = '';
+
+            if (Object.keys(editableGroups).length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666;">No hay grupos creados. Crea grupos usando "Selección a Mano Alzada" o "Agrupar".</p>';
+            } else {
+                for (let id in editableGroups) {
+                    const g = editableGroups[id];
+                    const div = document.createElement('div');
+                    div.className = 'group-item';
+                    div.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 20px; height: 20px; background: ${g.color}; border-radius: 50%; border: 2px solid #333;"></div>
+                                <input type="text" value="${g.name}" onchange="renombrarGrupo('${id}', this.value)" 
+                                       style="width: 150px; font-weight: bold; font-size: 14px; padding: 4px;">
+                            </div>
+                            <span style="font-size: 12px; color: #666;">${g.suministros.length} pts</span>
+                        </div>
+                        <div style="display: flex; gap: 5px;">
+                            <button onclick="toggleEditGroupPanel('${id}')" id="btn-edit-${id}" class="btn-small ${currentEditingGroup === id ? 'success' : 'warning'}">
+                                <i class="fa fa-${currentEditingGroup === id ? 'check' : 'edit'}"></i> 
+                                ${currentEditingGroup === id ? 'Terminar' : 'Editar'}
+                            </button>
+                            <button onclick="verDetalleGrupo('${id}')" class="btn-small" style="background: #3b82f6;">
+                                <i class="fa fa-list"></i> Ver
+                            </button>
+                            <button onclick="exportarUnGrupo('${id}')" class="btn-small success">
+                                <i class="fa fa-file-excel"></i> Excel
+                            </button>
+                            <button onclick="eliminarGrupo('${id}')" class="btn-small danger">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                }
+            }
+
+            document.getElementById('gestionGruposModal').style.display = 'flex';
+        }
+
+        function toggleMarkerInGroup(marker, groupId) {
+            const grupo = editableGroups[groupId];
+            const index = grupo.suministros.indexOf(marker.uniqueId);
+
+            // Verificar si está en otro grupo
+            if (index === -1) {
+                for (let gid in editableGroups) {
+                    if (gid !== groupId && editableGroups[gid].suministros.includes(marker.uniqueId)) {
+                        L.popup().setLatLng(marker.getLatLng())
+                            .setContent('<div style="color:#dc2626; font-weight:bold;">⚠️ Ya está en "' + editableGroups[gid].name + '"</div>')
+                            .openOn(map);
+                        setTimeout(() => map.closePopup(), 1500);
+                        return;
+                    }
+                }
+            }
+
+            if (index === -1) {
+                // Agregar
+                grupo.suministros.push(marker.uniqueId);
+                grupo.properties.push(marker.properties);
+                grupo.markers.push(marker);
+                marker.setStyle({
+                    fillColor: grupo.color,
+                    color: '#fff',
+                    weight: 3,
+                    radius: 9
+                });
+                L.popup().setLatLng(marker.getLatLng())
+                    .setContent(`<div style="color:${grupo.color}; font-weight:bold;">+ Agregado</div>`)
+                    .openOn(map);
+                setTimeout(() => map.closePopup(), 600);
+            } else {
+                // Quitar
+                grupo.suministros.splice(index, 1);
+                grupo.properties.splice(index, 1);
+                grupo.markers = grupo.markers.filter(m => m.uniqueId !== marker.uniqueId);
+
+                const colorOriginal = getColor(marker.properties.tipoFiltro);
+                marker.setStyle({
+                    fillColor: colorOriginal,
+                    color: '#000',
+                    weight: 1,
+                    radius: 6
+                });
+                L.popup().setLatLng(marker.getLatLng())
+                    .setContent('<div style="color:#666;">- Removido</div>')
+                    .openOn(map);
+                setTimeout(() => map.closePopup(), 600);
+            }
+
+            mostrarPanelGrupos();
+            actualizarLeyendaGrupos();
+        }
+
+        function renombrarGrupo(id, nuevoNombre) {
+            if (editableGroups[id]) {
+                editableGroups[id].name = nuevoNombre;
+                mostrarPanelGrupos();
+                actualizarLeyendaGrupos();
+            }
+        }
+
+        function eliminarGrupo(id) {
+            if (!confirm('¿Eliminar este grupo?')) return;
+
+            const grupo = editableGroups[id];
+            // Restaurar colores
+            grupo.markers.forEach(m => {
+                const colorOriginal = getColor(m.properties.tipoFiltro);
+                m.setStyle({
+                    fillColor: colorOriginal,
+                    color: '#000',
+                    weight: 1,
+                    radius: 6
+                });
+            });
+
+            delete editableGroups[id];
+            if (currentEditingGroup === id) currentEditingGroup = null;
+
+            mostrarPanelGrupos();
+            abrirGestionGrupos();
+            actualizarLeyendaGrupos();
+            aplicarFiltros();
+        }
+
+        function verDetalleGrupo(id) {
+            const g = editableGroups[id];
+            let html = `<h4>${g.name} (${g.suministros.length} puntos)</h4><ul style="max-height: 300px; overflow-y: auto; font-size: 13px;">`;
+            g.suministros.forEach((sum, idx) => {
+                html += `<li style="margin: 4px 0;"><strong>${sum}</strong> - ${g.properties[idx].ACTIVIDAD || 'N/D'}</li>`;
+            });
+            html += '</ul>';
+
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.style.display = 'flex';
+            modal.innerHTML = `
+                <div class="modal-content" style="width: 400px;">
+                    <span class="close" onclick="this.parentElement.parentElement.remove()">×</span>
+                    ${html}
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function exportarUnGrupo(id) {
+            const g = editableGroups[id];
+
+            const data = g.properties.map((p, idx) => {
+                let suministro = g.suministros[idx] || p.SUMINISTRO || p['SUMINISTRO'] || '';
+                if (!suministro) suministro = 'SIN_SUMINISTRO_' + (idx + 1);
+
+                let row = {
+                    SUMINISTRO: suministro.toString().trim().toUpperCase(),
+                    GRUPO_ASIGNADO: g.name,
+                    ACTIVIDAD: p.ACTIVIDAD || '',
+                    MEDIDOR: p.MEDIDOR || '',
+                    USUARIO: p.Usuario || p.USUARIO || '',
+                    DIRECCION: p.DIRECCION || '',
+                    DISTRITO: p.DISTRITO || '',
+                    LOCALIDAD: p.LOCALIDAD || '',
+                    OBSERVACION: p.OBSERVACION || ''
+                };
+
+                // Agregar otros campos excepto coordenadas y metadatos
+                for (let key in p) {
+                    if (/^(LAT|LON|lat|lon|Latitud|Longitud|coord|COORD)/i.test(key)) continue;
+                    if (['tipoFiltro', 'color', 'uniqueId', 'fileId'].includes(key)) continue;
+                    if (!row.hasOwnProperty(key) && p[key] !== undefined) {
+                        row[key] = p[key];
+                    }
+                }
+                return row;
+            });
+
+            // Reordenar para que SUMINISTRO sea primero
+            const reorderedData = data.map(row => {
+                const { SUMINISTRO, ...rest } = row;
+                return { SUMINISTRO, ...rest };
+            });
+
+            const ws = XLSX.utils.json_to_sheet(reorderedData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, g.name);
+            XLSX.writeFile(wb, `grupo_${g.name.replace(/\s+/g, '_')}.xlsx`);
+        }
+
+        function actualizarLeyendaGrupos() {
+            const container = document.getElementById('gruposLeyenda');
+            const content = document.getElementById('gruposLeyendaContent');
+
+            if (Object.keys(editableGroups).length === 0) {
+                container.style.display = 'none';
+                return;
+            }
+
+            container.style.display = 'block';
+            content.innerHTML = '';
+            for (let id in editableGroups) {
+                const g = editableGroups[id];
+                // Inicializar visibilidad si no existe
+                if (visibilidadGrupos[id] === undefined) {
+                    visibilidadGrupos[id] = true;
+                }
+                const isVisible = visibilidadGrupos[id];
+                const disabledClass = isVisible ? '' : 'disabled';
+
+                content.innerHTML += `
+                    <div class="leyenda-item ${disabledClass}" id="leyenda-grupo-${id}" onclick="toggleGrupoVisibilidad('${id}')" style="cursor: pointer; ${!isVisible ? 'opacity:0.4;' : ''}">
+                        <div class="leyenda-color" style="background:${g.color}; ${!isVisible ? 'background:#ccc !important;' : ''}"></div>
+                        <span style="${!isVisible ? 'text-decoration: line-through;' : ''}">${g.name} (${g.suministros.length})</span>
+                    </div>
+                `;
+            }
+        }
+
+        // AGRUPACIÓN MEJORADA POR PROXIMIDAD GEOGRÁFICA
+        function prepararAgrupamiento() {
+            clusterHulls.clearLayers();
+
+            // Incrementar contador de agrupaciones
+            contadorAgrupaciones++;
+            if (contadorAgrupaciones > maxIntentos) {
+                contadorAgrupaciones = 1; // Volver al inicio después de 5
+            }
+
+            let groupSizeStr = prompt(`Cantidad deseada por grupo (Intento ${contadorAgrupaciones}/${maxIntentos}):`, "10");
+            if (!groupSizeStr) {
+                contadorAgrupaciones--;
+                return;
+            }
+            let targetSize = parseInt(groupSizeStr);
+            if (isNaN(targetSize) || targetSize < 1) {
+                contadorAgrupaciones--;
+                alert("Ingrese un número válido mayor a 0.");
+                return;
+            }
+
+            // Limpiar grupos anteriores automáticamente para nueva distribución
+            if (Object.keys(editableGroups).length > 0) {
+                limpiarAgrupamientoSilencioso();
+            }
+
+            let availablePoints = [];
+
+            loadedFiles.forEach(file => {
+                if (!file.visible || !visibilidadArchivos[file.id]) return;
+                const distrito = document.getElementById('distritoFilter').value;
+                file.markers.forEach(m => {
+                    if (distrito !== '' && distrito !== 'TODOS' && m.properties.DISTRITO !== distrito) return;
+                    if (!visibilidad[m.properties.tipoFiltro]) return;
+
+                    const coord = m.getLatLng();
+                    availablePoints.push({
+                        lat: coord.lat,
+                        lng: coord.lng,
+                        properties: m.properties,
+                        marker: m,
+                        used: false
+                    });
+                });
+            });
+
+            if (availablePoints.length === 0) {
+                contadorAgrupaciones--;
+                alert("No hay puntos visibles.");
+                return;
+            }
+
+            // Función de distancia Haversine
+            function distanceMeters(a, b) {
+                const R = 6371000;
+                const dLat = (b.lat - a.lat) * Math.PI / 180;
+                const dLon = (b.lng - a.lng) * Math.PI / 180;
+                const lat1 = a.lat * Math.PI / 180;
+                const lat2 = b.lat * Math.PI / 180;
+                const x = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                          Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2);
+                const c = 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1-x));
+                return R * c;
+            }
+
+            // Diferentes estrategias según el número de intento
+            const nombresModo = ["", "Estándar", "Desde Esquina", "Desde Periferia", "Aleatoria", "Ultra-Concentrada"];
+            const modo = contadorAgrupaciones;
+            const factorConcentracion = [1, 0.9, 0.8, 0.7, 0.6][modo - 1] || 0.5;
+
+            // Pre-procesar puntos según el modo
+            if (modo === 4) {
+                // Modo 4: Mezclar aleatoriamente
+                for (let i = availablePoints.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [availablePoints[i], availablePoints[j]] = [availablePoints[j], availablePoints[i]];
+                }
+            } else if (modo === 2) {
+                // Modo 2: Ordenar por lat+lng (desde esquina SW)
+                availablePoints.sort((a, b) => (a.lat + a.lng) - (b.lat + b.lng));
+            } else if (modo === 3) {
+                // Modo 3: Desde periferia (más alejado del centro primero)
+                const centroid = {
+                    lat: availablePoints.reduce((sum, p) => sum + p.lat, 0) / availablePoints.length,
+                    lng: availablePoints.reduce((sum, p) => sum + p.lng, 0) / availablePoints.length
+                };
+                availablePoints.sort((a, b) => {
+                    const da = distanceMeters(a, centroid);
+                    const db = distanceMeters(b, centroid);
+                    return db - da;
+                });
+            }
+
+            // Algoritmo de agrupamiento
+            let tempGroups = [];
+
+            while (availablePoints.some(p => !p.used)) {
+                let seed = null;
+
+                // Elegir semilla según modo
+                if (modo === 1 || modo === 4 || modo >= 5) {
+                    // Punto más alejado de grupos existentes (dispersión)
+                    let maxMinDist = -1;
+                    availablePoints.forEach(p => {
+                        if (p.used) return;
+                        if (tempGroups.length === 0) {
+                            if (!seed) seed = p;
+                        } else {
+                            let minDistToGroups = Infinity;
+                            tempGroups.forEach(group => {
+                                group.forEach(member => {
+                                    const d = distanceMeters(p, member);
+                                    if (d < minDistToGroups) minDistToGroups = d;
+                                });
+                            });
+                            if (minDistToGroups > maxMinDist) {
+                                maxMinDist = minDistToGroups;
+                                seed = p;
+                            }
+                        }
+                    });
+                } else {
+                    // Tomar el primero disponible (ya ordenado)
+                    seed = availablePoints.find(p => !p.used);
+                }
+
+                if (!seed) break;
+
+                // Encontrar vecinos más cercanos a la semilla
+                let neighbors = [];
+                availablePoints.forEach(p => {
+                    if (!p.used) {
+                        const dist = distanceMeters(seed, p);
+                        neighbors.push({ point: p, distance: dist });
+                    }
+                });
+
+                neighbors.sort((a, b) => a.distance - b.distance);
+
+                // Aplicar factor de concentración
+                const sizeEfectivo = Math.max(2, Math.floor(targetSize * factorConcentracion));
+                let groupMembers = neighbors.slice(0, sizeEfectivo).map(n => n.point);
+
+                groupMembers.forEach(p => p.used = true);
+
+                if (groupMembers.length > 0) {
+                    tempGroups.push(groupMembers);
+                }
+            }
+
+            // Crear grupos editables con nombres descriptivos
+            tempGroups.forEach((grp, idx) => {
+                const id = `grp_${groupIdCounter++}`;
+                const color = getClusterColor(idx);
+
+                editableGroups[id] = {
+                    id: id,
+                    name: `${nombresModo[modo]} ${idx + 1}`,
+                    color: color,
+                    suministros: grp.map(p => p.marker.uniqueId),
+                    properties: grp.map(p => p.properties),
+                    markers: grp.map(p => p.marker)
+                };
+
+                inicializarVisibilidadGrupo(id);
+
+                grp.forEach(p => {
+                    p.marker.setStyle({
+                        fillColor: color,
+                        weight: 2,
+                        radius: 8
+                    });
+                });
+
+                const coords = grp.map(p => [p.lng, p.lat]);
+                if (coords.length >= 3) {
+                    const hull = turf.convex(turf.points(coords));
+                    if (hull) {
+                        L.geoJSON(hull, {
+                            style: {
+                                color: color,
+                                weight: 3,
+                                opacity: 0.7,
+                                fillOpacity: 0.15,
+                                fillColor: color
+                            }
+                        }).addTo(clusterHulls);
+                    }
+                }
+            });
+
+            aplicarFiltros();
+            mostrarPanelGrupos();
+            actualizarLeyendaGrupos();
+
+            // Mensajes descriptivos por modo
+            const mensajes = [
+                "",
+                "✓ Distribución ESTÁNDAR: Grupos dispersos geográficamente",
+                "✓ Distribución DESDE ESQUINA: Ordenado geográfico (SW→NE)",
+                "✓ Distribución DESDE PERIFERIA: Desde afuera hacia el centro",
+                "✓ Distribución ALEATORIA: Puntos mezclados aleatoriamente",
+                "✓ Distribución ULTRA-CONCENTRADA: Grupos pequeños y muy cercanos"
+            ];
+
+            let msg = mensajes[modo] || "✓ Distribución generada";
+            if (contadorAgrupaciones < maxIntentos) {
+                msg += `\n\n📌 Si no te gusta, presiona "Agrupar por Cantidad" de nuevo (${maxIntentos - contadorAgrupaciones} opciones más)`;
+            } else {
+                msg += `\n\n🔄 Última opción mostrada. Si no te gusta, usa "Limpiar Grupos" y comienza de nuevo.`;
+                contadorAgrupaciones = 0; // Reiniciar
+            }
+
+            // Mostrar en modal
+            document.getElementById('agrupamientoContenido').innerHTML = `
+                <div style="text-align: center; padding: 20px;">
+                    <div style="font-size: 48px; margin-bottom: 10px;">${contadorAgrupaciones}/${maxIntentos}</div>
+                    <div style="color: #1d4ed8; font-weight: bold; margin-bottom: 15px;">${nombresModo[modo]}</div>
+                    <div style="font-size: 14px; color: #666; margin-bottom: 15px;">${tempGroups.length} grupos de ~${Math.floor(targetSize * factorConcentracion)} puntos</div>
+                    <div style="background: #dbeafe; padding: 12px; border-radius: 8px; font-size: 13px; text-align: left;">
+                        ${msg.replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+            `;
+            document.getElementById('agrupamientoModal').style.display = 'flex';
+        }
+
+        function limpiarAgrupamientoSilencioso() {
+            // Limpiar sin mostrar alert
+            for (let id in editableGroups) {
+                const grupo = editableGroups[id];
+                if (grupo.markers) {
+                    grupo.markers.forEach(m => {
+                        const colorOriginal = getColor(m.properties.tipoFiltro);
+                        m.setStyle({
+                            fillColor: colorOriginal,
+                            color: '#000',
+                            weight: 1,
+                            radius: 6
+                        });
+                    });
+                }
+            }
+            editableGroups = {};
+            clusterHulls.clearLayers();
+            const panel = document.getElementById('grupos-control-panel');
+            if (panel) panel.classList.remove('visible');
+        }
+
+        
+        function toggleJsonReferencia() {
+            if (!jsonReferenciaVisible) {
+                // Mostrar puntos JSON
+                if (matrizUbicaciones.size === 0) {
+                    alert("No hay datos de referencia cargados. La matriz JSON se carga automáticamente al iniciar.");
+                    return;
+                }
+
+                jsonReferenciaLayer.clearLayers();
+                jsonPuntosCargados = [];
+                let contador = 0;
+
+                matrizUbicaciones.forEach((coords, suministro) => {
+                    const marker = L.circleMarker([coords.lat, coords.lng], {
+                        radius: 5,
+                        fillColor: '#0ea5e9',
+                        color: '#0284c7',
+                        weight: 2,
+                        opacity: 0.8,
+                        fillOpacity: 0.6
+                    });
+
+                    marker.bindPopup(`
+                        <div style="font-size: 13px;">
+                            <strong style="color: #0284c7;">📍 Punto de Referencia (JSON)</strong><br>
+                            <hr style="margin: 5px 0;">
+                            <b>ID:</b> ${suministro}<br>
+                            <b>Lat:</b> ${coords.lat.toFixed(6)}<br>
+                            <b>Lon:</b> ${coords.lng.toFixed(6)}
+                        </div>
+                    `);
+
+                    marker.bindTooltip(`Ref: ${suministro}`, {
+                        permanent: false,
+                        direction: 'top'
+                    });
+
+                    jsonReferenciaLayer.addLayer(marker);
+                    jsonPuntosCargados.push({suministro, lat: coords.lat, lng: coords.lng});
+                    contador++;
+                });
+
+                jsonReferenciaLayer.addTo(map);
+                jsonReferenciaVisible = true;
+                document.getElementById('txt-btn-json').textContent = `Ocultar Puntos JSON (${contador})`;
+                document.getElementById('btn-ver-json').style.background = '#dc2626';
+
+                // Agregar o actualizar leyenda
+                agregarALeyendaJSON(contador);
+
+            } else {
+                // Ocultar
+                map.removeLayer(jsonReferenciaLayer);
+                jsonReferenciaVisible = false;
+                document.getElementById('txt-btn-json').textContent = 'Ver Puntos de Referencia (JSON)';
+                document.getElementById('btn-ver-json').style.background = '#0369a1';
+            }
+        }
+
+        function agregarALeyendaJSON(cantidad) {
+            let container = document.getElementById('jsonLeyenda');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'jsonLeyenda';
+                container.style.cssText = 'margin-top: 12px; border-top: 2px solid #e5e7eb; padding-top: 10px; display: block;';
+                container.innerHTML = '<strong>Matriz JSON</strong><div id="jsonLeyendaContent"></div>';
+                document.getElementById('leyenda').appendChild(container);
+            }
+
+            document.getElementById('jsonLeyendaContent').innerHTML = `
+                <div class="leyenda-item" onclick="toggleJsonReferencia()" style="cursor: pointer;">
+                    <div class="leyenda-color" style="background: #0ea5e9; border-color: #0284c7;"></div>
+                    <span>Puntos de Referencia (${cantidad})</span>
+                </div>
+            `;
+            container.style.display = 'block';
+        }
+
+        // Actualizar leyenda cuando se cargue la matriz inicialmente
+        function actualizarLeyendaJSONInicial() {
+            if (matrizUbicaciones.size > 0) {
+                agregarALeyendaJSON(matrizUbicaciones.size);
+            }
+        }
+        
+        
+        function exportarGruposExcel() {
+            if (Object.keys(editableGroups).length === 0) {
+                alert("No hay grupos para exportar");
+                return;
+            }
+
+            const data = [];
+
+            for (let id in editableGroups) {
+                const g = editableGroups[id];
+
+                // Fila de encabezado del grupo
+                data.push({
+                    GRUPO: g.name,
+                    COLOR: g.color,
+                    CANTIDAD: g.suministros.length,
+                    SUMINISTRO: '*** RESUMEN DEL GRUPO ***',
+                    ACTIVIDAD: '',
+                    MEDIDOR: '',
+                    USUARIO: '',
+                    DIRECCION: '',
+                    DISTRITO: ''
+                });
+
+                // Detalles de cada punto en el grupo
+                g.properties.forEach((p, idx) => {
+                    // Buscar identificador en todas las variantes posibles
+                    let suministro = g.suministros[idx] || p.SUMINISTRO || p['SUMINISTRO'] || 
+                                    p['N° SUMINISTRO'] || p['COD SUMINISTRO'] || p['Suministro'] ||
+                                    p.CLICODFAC || p['CLICODFAC'] || p.CLICOD || p['CLICOD'] ||
+                                    p.ID || p['ID'] || p.Id || p['Id'] || p.id || p['id'] ||
+                                    p.CONTRATO || p['CONTRATO'] || p.SERVICIO || p['SERVICIO'] || '';
+
+                    if (!suministro || suministro.toString().trim() === '') {
+                        suministro = 'SIN_ID_' + (idx + 1);
+                    }
+
+                    // Crear fila base (sin coordenadas)
+                    let row = {
+                        GRUPO: g.name,
+                        COLOR: '',
+                        CANTIDAD: '',
+                        SUMINISTRO: suministro.toString().trim().toUpperCase(),
+                        ACTIVIDAD: p.ACTIVIDAD || p['ACTIVIDAD'] || '',
+                        MEDIDOR: p.MEDIDOR || p['MEDIDOR'] || '',
+                        USUARIO: p.USUARIO || p['USUARIO'] || p.Usuario || '',
+                        DIRECCION: p.DIRECCION || p['DIRECCION'] || '',
+                        DISTRITO: p.DISTRITO || p['DISTRITO'] || '',
+                        LOCALIDAD: p.LOCALIDAD || p['LOCALIDAD'] || '',
+                        SECTOR: p.SECTOR || p['SECTOR'] || '',
+                        OBSERVACION: p.OBSERVACION || p['OBSERVACION'] || ''
+                    };
+
+                    // Agregar todos los demás campos excepto coordenadas y metadatos
+                    for (let key in p) {
+                        if (/^(LAT|LON|lat|lon|Latitud|Longitud|latitude|longitude|X|Y|COORD|coord)/i.test(key)) continue;
+                        if (['tipoFiltro', 'color', 'uniqueId', 'fileId', 'sourceMarker', 'used'].includes(key)) continue;
+                        if (!row.hasOwnProperty(key) && p[key] !== undefined && p[key] !== null) {
+                            row[key] = p[key];
+                        }
+                    }
+
+                    data.push(row);
+                });
+
+                // Separador
+                data.push({
+                    GRUPO: '---',
+                    COLOR: '',
+                    CANTIDAD: '',
+                    SUMINISTRO: '',
+                    ACTIVIDAD: '',
+                    MEDIDOR: '',
+                    USUARIO: '',
+                    DIRECCION: '',
+                    DISTRITO: ''
+                });
+            }
+
+            const ws = XLSX.utils.json_to_sheet(data);
+
+            // Configurar anchos de columna
+            ws['!cols'] = [
+                { wch: 25 }, { wch: 10 }, { wch: 10 }, { wch: 20 },
+                { wch: 15 }, { wch: 15 }, { wch: 25 }, { wch: 35 }, { wch: 15 }
+            ];
+
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Grupos Completos");
+            XLSX.writeFile(wb, `grupos_completos_${new Date().toISOString().slice(0,10)}.xlsx`);
+        }
+
+        function exportarGruposPDF() {
+            if (Object.keys(editableGroups).length === 0) {
+                alert("No hay grupos para exportar");
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFontSize(16);
+            doc.text("Resumen de Grupos - Agua Potable", 20, 20);
+            doc.setFontSize(11);
+            doc.text(`Total grupos: ${Object.keys(editableGroups).length} | Fecha: ${new Date().toLocaleDateString('es-PE')}`, 20, 30);
+
+            let y = 45;
+            for (let id in editableGroups) {
+                const g = editableGroups[id];
+                doc.setFontSize(12);
+                doc.setTextColor(0);
+                doc.text(`${g.name} (${g.suministros.length} puntos)`, 20, y);
+
+                doc.setFontSize(9);
+                doc.setTextColor(60);
+                const text = g.suministros.slice(0, 10).join(', ') + (g.suministros.length > 10 ? '...' : '');
+                doc.text(text, 25, y + 6);
+                y += 15;
+
+                if (y > 270) {
+                    doc.addPage();
+                    y = 20;
+                }
+            }
+
+            doc.save(`resumen_grupos_${new Date().toISOString().slice(0,10)}.pdf`);
+        }
+
+        </script>
 </body>
 </html>
